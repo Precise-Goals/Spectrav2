@@ -1,7 +1,7 @@
 # 🌌 Spectra — Unified Web3 Agentic Wallet & Exchange
 
-> **Built by Team Abhimanyu** · Universal Gas Framework (UGF) Hackathon  
-> Deployed on **Base Sepolia Testnet** · Powered by [Tychi Labs](https://tychilabs.com)
+> **Built by Team Falcons** · Universal Gas Framework (UGF) Hackathon  
+> Deployed on **Base Sepolia Testnet** · Built with UGF and [Tychi Labs](https://tychilabs.com)
 
 Spectra is a production-grade decentralised finance (DeFi) platform that eliminates the single largest barrier to Web3 adoption — **gas fees**. Every on-chain action (swaps, subscriptions, NFT minting) is executed completely gasless for the end user via the **Universal Gas Framework (UGF)**, settled in **TYI Mock USD** instead of native ETH.
 
@@ -24,7 +24,7 @@ Spectra is a production-grade decentralised finance (DeFi) platform that elimina
 10. [Local Development Setup](#️-local-development-setup)
 11. [Environment Variables](#-environment-variables)
 12. [Tech Stack](#-tech-stack)
-13. [Team](#-team-abhimanyu)
+13. [Team](#-team-falcons)
 
 ---
 
@@ -624,6 +624,26 @@ Get your Sarvam AI key at [sarvam.ai](https://sarvam.ai).
 
 ---
 
+## 👥 Team Falcons
+
+- **Sarthak Patil** - sarthakpatil.ug@gmail.com
+- **Utkarsh Vidwat** - utkarshvidwat@gmail.com
+- **Jay Magar** - jaymagar310@gmail.com
+- **Omkar Rane** - omkarrane0934@gmail.com
+- **Sarthak Godse** - sarthakgodse03@gmail.com
+
+---
+
+## 🌟 Community & Interoperability
+
+### Importance of Rise In Community
+The **Rise In community** has been pivotal to the development of Spectra. By fostering an environment of collaboration, sharing resources, and providing continuous feedback, the community has empowered our team to overcome technical hurdles and accelerate our Web3 integration. We are deeply grateful for their support.
+
+### Stellar XML Integration
+To ensure robust data interchange and wide-ranging interoperability, Spectra incorporates **Stellar XML** standards. This allows our infrastructure to seamlessly communicate with various external services and maintain a high standard of data compliance.
+
+---
+
 ## 🔗 References
 
 | Resource | Link |
@@ -638,4 +658,4 @@ Get your Sarvam AI key at [sarvam.ai](https://sarvam.ai).
 
 ---
 
-*Developed for the Universal Gas Framework (UGF) Hackathon. Powered by [Tychi Labs](https://tychilabs.com).*
+*Developed for the Universal Gas Framework (UGF) Hackathon. Built with UGF and [Tychi Labs](https://tychilabs.com).*
