@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import styled from 'styled-components';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import './styles/final.css'
 
@@ -33,9 +33,18 @@ const LoaderWrap = styled.div`
 
 const Loader = () => <LoaderWrap>SPECTRA — LOADING...</LoaderWrap>;
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 export default function App() {
   return (
     <MainLayout>
+      <ScrollToTop />
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public Routes */}

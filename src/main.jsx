@@ -11,18 +11,16 @@ import './styles/spectra-parity.css';
 import App from './App.jsx';
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <RateLimitProvider>
-            <GlobalStyle />
-            <UGFProvider mode="testnet">
-              <App />
-            </UGFProvider>
-          </RateLimitProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  </StrictMode>,
+  <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <RateLimitProvider>
+          <GlobalStyle />
+          <UGFProvider mode="testnet">
+            <App />
+          </UGFProvider>
+        </RateLimitProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  </BrowserRouter>,
 );

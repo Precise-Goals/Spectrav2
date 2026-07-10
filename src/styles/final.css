@@ -117,3 +117,6 @@ nav.sc-jSppWd.khDhFc {
   border: blue 1px solid;
   border-radius: 4rem;
 }
+div#hero-spline {
+  z-index: 9;
+}

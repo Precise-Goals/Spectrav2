@@ -114,9 +114,9 @@ const Star = styled.button`
   border: none;
   padding: 0;
   cursor: pointer;
-  color: ${props => props.active ? 'var(--color-primary)' : 'var(--color-secondary)'};
+  color: ${props => props.$active ? 'var(--color-primary)' : 'var(--color-secondary)'};
   transition: transform 0.1s ease, color 0.2s ease;
-  opacity: ${props => props.active ? 1 : 0.3};
+  opacity: ${props => props.$active ? 1 : 0.3};
   
   &:hover {
     transform: scale(1.1);
@@ -124,7 +124,7 @@ const Star = styled.button`
   
   .material-symbols-outlined {
     font-size: 28px;
-    font-variation-settings: 'FILL' ${props => props.active ? 1 : 0};
+    font-variation-settings: 'FILL' ${props => props.$active ? 1 : 0};
   }
 `;
 
@@ -250,7 +250,7 @@ export default function FeedbackSection() {
                 <Star
                   key={star}
                   type="button"
-                  active={star <= (hoverRating || rating)}
+                  $active={star <= (hoverRating || rating)}
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
                   onClick={() => setRating(star)}
