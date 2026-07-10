@@ -12,6 +12,7 @@ const Mint     = lazy(() => import('./pages/Mint'));
 const Journal  = lazy(() => import('./pages/Journal'));
 const Admin    = lazy(() => import('./pages/Admin'));
 const Profile  = lazy(() => import('./pages/ProfileDashboard'));
+const LegalPage = lazy(() => import('./pages/LegalPage'));
 
 const LoaderWrap = styled.div`
   height: 100vh;
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/journal"  element={<Journal />}  />
           <Route path="/admin"    element={<Admin />}    />
           <Route path="/profile"  element={<Profile />}  />
+          <Route path="/legal"    element={<LegalPage />} />
         </Routes>
       </Suspense>
     </MainLayout>

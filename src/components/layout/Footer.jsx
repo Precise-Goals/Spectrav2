@@ -66,7 +66,7 @@ export default function Footer() {
       <LinkGroup>
         <FooterLink to="/about">Documentation</FooterLink>
         <FooterLink to="/agent">Terminal</FooterLink>
-        <FooterLink to="/about">Privacy Policy</FooterLink>
+        <FooterLink to="/legal">Privacy Policy</FooterLink>
         <FooterLink to="/exchange">Status</FooterLink>
         <FooterLink to="/about">EU AI Act Compliance</FooterLink>
       </LinkGroup>
