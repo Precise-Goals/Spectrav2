@@ -14,8 +14,8 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const Container = styled.div`
-  min-height: 100vh;
-  padding: 120px 24px 64px;
+  // min-height: 100vh;
+  padding: 170px 24px 64px;
   background-color: #0A0A0B;
   color: #fff;
   font-family: 'JetBrains Mono', monospace;
@@ -668,7 +668,7 @@ export default function ProfileDashboard() {
 
   if (!account) {
     return (
-      <Container className="bg-grid-overlay">
+      <Container className="bg-grid-overlay" style={{minHeight:"0vh"}}>
         <GlobalStyle />
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <CyberCard style={{ padding: 32, alignItems: 'center', textAlign: 'center', maxWidth: '500px' }}>

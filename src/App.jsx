@@ -53,7 +53,7 @@ export default function App() {
           <Route path="/exchange" element={<Exchange />} />
           <Route path="/journal"  element={<Journal />}  />
           <Route path="/admin"    element={<Admin />}    />
-          <Route path="/profile"  element={<Profile />}  />
+          {/* <Route path="/profile"  element={<Profile />}  /> */}
           <Route path="/legal"    element={<LegalPage />} />
           <Route path="/login"    element={<Login />}    />
 

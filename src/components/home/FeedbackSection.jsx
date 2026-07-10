@@ -211,7 +211,7 @@ export default function FeedbackSection() {
 
   return (
     <Section id="feedback">
-      <Container className="bg-grid-overlay">
+      <Container >
         <Title>Help Us Improve</Title>
         <Subtitle>Your feedback directly shapes the future of Spectra.</Subtitle>
         

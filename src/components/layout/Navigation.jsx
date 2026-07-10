@@ -69,6 +69,7 @@ const Navigation = () => {
       <StyledLink to="/agent">Agent</StyledLink>
       <StyledLink to="/exchange">Exchange</StyledLink>
       <StyledLink to="/mint">NFT Minting</StyledLink>
+      <StyledLink to="/journal">Journal</StyledLink>
     </NavContainer>
   );
 };

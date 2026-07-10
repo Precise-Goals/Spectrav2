@@ -120,3 +120,15 @@ nav.sc-jSppWd.khDhFc {
 div#hero-spline {
   z-index: 9;
 }
+nav {
+  border-radius: 5rem;
+  border: blue 1px solid;
+}
+.sc-kmQJWH.haoOn {
+  box-shadow: -9px 9px 0 7px blue;
+  padding: 3% 8%;
+  margin: 1% 6%;
+  border: 1px solid white;
+  max-width: none;
+  border-radius: 6rem;
+}

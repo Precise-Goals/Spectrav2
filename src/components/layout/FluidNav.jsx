@@ -11,7 +11,6 @@ const NavWrap = styled.nav`
   top: 24px;
   left: 50%;
   transform: translateX(-50%);
-  border: 1px solid var(--border-color);
   padding: 12px 24px;
   background: var(--bg);
   display: flex;
@@ -128,6 +127,7 @@ const NAV_LINKS = [
   { to: '/agent',    label: 'Agent' },
   { to: '/exchange', label: 'Exchange' },
   { to: '/mint',     label: 'NFT Minting' },
+  { to: '/journal',  label: 'Journal' },
 ];
 
 export default function FluidNav() {
