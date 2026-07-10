@@ -27,6 +27,36 @@ const PageTitle = styled.h1`
   margin-bottom: 24px;
 `;
 
+const HeroSection = styled.section`
+  margin-bottom: 128px;
+`;
+
+const Grid12 = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  align-items: end;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(12, 1fr);
+  }
+`;
+
+const ColSpan8 = styled.div`
+  grid-column: span 4;
+
+  @media (min-width: 768px) {
+    grid-column: span 8;
+  }
+`;
+
+const HeroDivider = styled.div`
+  width: 100%;
+  height: 1px;
+  background: var(--border-color);
+  margin-top: 48px;
+`;
+
 const SectionGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -110,7 +140,14 @@ const ListItem = styled.li`
 export default function PrivacyPolicy() {
   return (
     <Page>
-      <PageTitle>[ PRIVACY POLICY ]</PageTitle>
+      <HeroSection className="bg-grid-overlay">
+        <Grid12>
+          <ColSpan8>
+            <PageTitle>[ PRIVACY POLICY ]</PageTitle>
+          </ColSpan8>
+        </Grid12>
+        <HeroDivider />
+      </HeroSection>
       
       <SectionGrid>
         <StickyCol>
