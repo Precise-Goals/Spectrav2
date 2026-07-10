@@ -333,7 +333,7 @@ export default function About() {
       <HeroSection className="bg-grid-overlay">
         <Grid12>
           <ColSpan8>
-            <PageTitle>[ TRANSPARENCY &amp; COMPLIANCE ]</PageTitle>
+            <PageTitle>[ ABOUT SPECTRA ]</PageTitle>
             <PageSubtitle>
               SPECTRA operates at the intersection of high-speed autonomous execution and rigorous regulatory adherence. Our architecture is designed to demystify complex Web3 interactions while maintaining an unyielding commitment to legal frameworks.
             </PageSubtitle>
