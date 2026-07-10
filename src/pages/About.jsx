@@ -202,6 +202,20 @@ const BodyText = styled.p`
   opacity: 0.87;
 `;
 
+const List = styled.ul`
+  margin-left: 20px;
+  margin-bottom: 16px;
+`;
+
+const ListItem = styled.li`
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-primary);
+  opacity: 0.87;
+  margin-bottom: 8px;
+`;
+
 const CodeBox = styled.div`
   border: 1px solid var(--border-color);
   padding: 16px;
@@ -319,7 +333,7 @@ export default function About() {
       <HeroSection className="bg-grid-overlay">
         <Grid12>
           <ColSpan8>
-            <PageTitle>[ TRANSPARENCY &amp; COMPLIANCE ]</PageTitle>
+            <PageTitle>[ ABOUT SPECTRA ]</PageTitle>
             <PageSubtitle>
               SPECTRA operates at the intersection of high-speed autonomous execution and rigorous regulatory adherence. Our architecture is designed to demystify complex Web3 interactions while maintaining an unyielding commitment to legal frameworks.
             </PageSubtitle>
@@ -333,6 +347,47 @@ export default function About() {
         </Grid12>
         <HeroDivider />
       </HeroSection>
+
+      {/* About Spectra */}
+      <MissionSection>
+        <SectionGrid>
+          <StickyCol>
+            <StickyTitle>About Spectra</StickyTitle>
+          </StickyCol>
+          <ContentCol>
+            <ContentBlock>
+              <BodyText>
+                Spectra is a vertically-integrated, gasless Web3 Agentic Wallet and Decentralized Exchange. Built on Base Sepolia and powered by the Universal Gas Framework (UGF) and Sarvam AI, Spectra removes the biggest barrier to Web3 adoption — gas fees. Users can swap tokens, manage subscriptions, and mint Soulbound NFTs without ever needing native tokens like ETH.
+              </BodyText>
+            </ContentBlock>
+
+            <ContentBlock>
+              <BlockHeader>
+                <BlockTitle>Our Vision</BlockTitle>
+              </BlockHeader>
+              <BodyText>
+                To deliver a seamless, intelligent, Web2-like experience for decentralized finance where anyone can execute complex financial actions through natural language.
+              </BodyText>
+            </ContentBlock>
+
+            <ContentBlock>
+              <BlockHeader>
+                <BlockTitle>Key Features</BlockTitle>
+              </BlockHeader>
+              <List>
+                <ListItem>AI-powered GlassTerminal for conversational intent parsing</ListItem>
+                <ListItem>Fully gasless transactions settled in TYI Mock USD</ListItem>
+                <ListItem>Tiered SaaS model (Alpha, Vector, Nexus) enforced by non-transferable Soulbound NFTs</ListItem>
+                <ListItem>Real-time AMM exchange with decimal-aware pricing</ListItem>
+                <ListItem>Human-in-the-Loop security via EIP-712 signatures</ListItem>
+              </List>
+              <BodyText style={{ marginTop: '16px' }}>
+                Spectra combines cutting-edge AI, gas abstraction, and on-chain subscription logic to create the next generation of accessible DeFi.
+              </BodyText>
+            </ContentBlock>
+          </ContentCol>
+        </SectionGrid>
+      </MissionSection>
 
       {/* Mission Object */}
       <MissionSection>

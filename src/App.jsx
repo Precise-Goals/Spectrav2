@@ -12,6 +12,7 @@ const Mint     = lazy(() => import('./pages/Mint'));
 const Journal  = lazy(() => import('./pages/Journal'));
 const Admin    = lazy(() => import('./pages/Admin'));
 const Profile  = lazy(() => import('./pages/ProfileDashboard'));
+const LegalPage = lazy(() => import('./pages/LegalPage'));
 const Login    = lazy(() => import('./pages/Login'));
 
 import RequireAuth from './components/layout/RequireAuth';
@@ -43,6 +44,8 @@ export default function App() {
           <Route path="/exchange" element={<Exchange />} />
           <Route path="/journal"  element={<Journal />}  />
           <Route path="/admin"    element={<Admin />}    />
+          <Route path="/profile"  element={<Profile />}  />
+          <Route path="/legal"    element={<LegalPage />} />
           <Route path="/login"    element={<Login />}    />
 
           {/* Protected Routes */}
