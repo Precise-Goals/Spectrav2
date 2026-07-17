@@ -54,7 +54,7 @@ export default function MintConsole() {
   const [userTier, setUserTier] = useState(-1);
   const [ownedTokenId, setOwnedTokenId] = useState(0);
   
-  const { connectWallet, stellarPublicKey, isStellarConnected, upgradeTier } = useAuth();
+  const { connectWallet, stellarPublicKey, isStellarConnected, upgradeTier, cancelTier } = useAuth();
   const account = stellarPublicKey;
 
   const activeTier = useMemo(() => TIERS.find((tier) => tier.id === selectedTier) || TIERS[2], [selectedTier]);
@@ -163,9 +163,13 @@ export default function MintConsole() {
         currentAccount = await connectWalletLocal();
       }
       
-      if (ownedTokenId > 0) {
+      if (userTier > 0) {
         setStatus('BURNING_NFT');
-        await stellarBurn(currentAccount, ownedTokenId);
+        const tierLevel = activeTier.id === 'nexus' ? 2 : 1;
+        const result = await cancelTier(tierLevel);
+        if (result && result.hash) {
+          setTxHash(result.hash);
+        }
       }
 
       setStatus('CANCELLED');

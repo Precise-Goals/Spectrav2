@@ -3,7 +3,8 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { useNavigate } from 'react-router-dom';
 import { getProfile } from '../lib/stellar/contracts/profile';
 import { getUserTier as getStellarUserTier } from '../services/tierVerification';
-import { buildMintTransaction, coSignAndSubmitMint } from '../services/mintAsset';
+import { buildMintTransaction, coSignAndSubmitMint, buildBurnTransaction } from '../services/mintAsset';
+import { TransactionBuilder, Horizon, Networks } from '@stellar/stellar-sdk';
 import { isAllowed, setAllowed, getAddress, signTransaction } from '@stellar/freighter-api';
 
 const AuthContext = createContext();
@@ -139,19 +140,47 @@ export function AuthProvider({ children }) {
     checkWalletConnection();
   }, [fetchProfileAndTier, navigate]);
 
+  const cancelTier = useCallback(async (tierLevel) => {
+    if (!stellarPublicKey) throw new Error("Wallet not connected");
+    const xdr = await buildBurnTransaction(stellarPublicKey, tierLevel);
+    
+    let signedXdr;
+    try {
+      const response = await signTransaction(xdr, { 
+        network: 'TESTNET',
+        networkPassphrase: import.meta.env.VITE_STELLAR_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015'
+      });
+      if (typeof response === 'string') signedXdr = response;
+      else if (response && typeof response === 'object') {
+        if (response.error) throw new Error(response.error.message || response.error);
+        signedXdr = response.signedTxXdr;
+      }
+      if (!signedXdr) throw new Error("Transaction was not signed");
+    } catch (e) {
+      throw new Error(`User rejected signature or error: ${e.message || e}`);
+    }
+    
+    const horizonUrl = import.meta.env.VITE_STELLAR_HORIZON_URL || "https://horizon-testnet.stellar.org";
+    const server = new Horizon.Server(horizonUrl);
+    const tx = TransactionBuilder.fromXDR(signedXdr, import.meta.env.VITE_STELLAR_NETWORK_PASSPHRASE || Networks.TESTNET);
+    const result = await server.submitTransaction(tx);
+    
+    await fetchProfileAndTier(stellarPublicKey);
+    return result;
+  }, [stellarPublicKey, fetchProfileAndTier]);
+
   const value = {
     isLoggedIn,
-    // Provide an empty walletAddress property so UI that still reads it won't crash
     walletAddress: '',
     disconnectWallet,
     connectWallet,
-    // Profile & SaaS
     profile,
     userTier,
     isLoadingProfile,
     isInitialized,
     fetchProfileAndTier,
     upgradeTier,
+    cancelTier,
     // Stellar
     stellarPublicKey,
     isStellarConnected

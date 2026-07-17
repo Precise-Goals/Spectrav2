@@ -69,3 +69,36 @@ export async function coSignAndSubmitMint(signedUserXdr) {
   const response = await server.submitTransaction(tx);
   return response;
 }
+
+export async function buildBurnTransaction(userPublicKey, tier) {
+  const { horizonUrl, passphrase } = getHorizonConfig();
+  const server = new Horizon.Server(horizonUrl);
+  
+  const issuerKey = import.meta.env.VITE_SAAS_ISSUER_PUBLIC_KEY;
+  if (!issuerKey) throw new Error("VITE_SAAS_ISSUER_PUBLIC_KEY not found in environment.");
+  
+  const assetCode = tier === 2 ? 'AIENT' : 'AIPRO';
+  const saasAsset = new Asset(assetCode, issuerKey);
+  
+  let userAccount;
+  try {
+    userAccount = await server.loadAccount(userPublicKey);
+  } catch (error) {
+    throw new Error(`User account ${userPublicKey} not found on network.`);
+  }
+  
+  const tx = new TransactionBuilder(userAccount, {
+    fee: "1000",
+    networkPassphrase: passphrase
+  })
+    .addOperation(Operation.payment({
+      source: userPublicKey,
+      destination: issuerKey,
+      asset: saasAsset,
+      amount: "1.0000000"
+    }))
+    .setTimeout(180)
+    .build();
+    
+  return tx.toXDR();
+}

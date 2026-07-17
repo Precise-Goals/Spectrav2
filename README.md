@@ -1,661 +1,748 @@
-# 🌌 Spectra — Unified Web3 Agentic Wallet & Exchange
+<div align="center">
 
-> **Built by Team Falcons** · Universal Gas Framework (UGF) Hackathon  
-> Deployed on **Base Sepolia Testnet** · Built with UGF and [Tychi Labs](https://tychilabs.com)
+# ⚡ SPECTRA v2
 
-Spectra is a production-grade decentralised finance (DeFi) platform that eliminates the single largest barrier to Web3 adoption — **gas fees**. Every on-chain action (swaps, subscriptions, NFT minting) is executed completely gasless for the end user via the **Universal Gas Framework (UGF)**, settled in **TYI Mock USD** instead of native ETH.
+### *Frictionless AI-Orchestrated DeFi on Stellar*
 
----
+<br/>
 
-## 📑 Table of Contents
+[![Built for Stellar Build Station](https://img.shields.io/badge/Built%20for-Stellar%20Build%20Station%20Pune-7B2FBE?style=for-the-badge&logo=stellar&logoColor=white)](https://stellar.org)
+[![Team](https://img.shields.io/badge/Team-Falcons-0066FF?style=for-the-badge&logo=github&logoColor=white)](#team)
+[![License](https://img.shields.io/badge/License-MIT-22C55E?style=for-the-badge)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Testnet%20Live-10B981?style=for-the-badge&logo=statuspage&logoColor=white)]()
 
-1. [The Problem & Vision](#-the-problem--vision)
-2. [Platform Overview](#-platform-overview)
-3. [Application Architecture](#-application-architecture)
-4. [Module Deep-Dives](#-module-deep-dives)
-   - [AI Agentic Terminal](#1-ai-agentic-terminal--glassterminal)
-   - [Exchange Engine](#2-exchange-engine)
-   - [Subscriptive NFT Engine](#3-subscriptive-nft-engine--mint-console)
-5. [Smart Contract Suite](#-smart-contract-suite)
-6. [UGF Gasless Pipeline](#-ugf-gasless-pipeline)
-7. [Agent Orchestration Architecture](#-agent-orchestration-architecture)
-8. [End-to-End Workflow Walkthrough](#-end-to-end-workflow-walkthrough)
-9. [Contract Addresses](#-deployed-contract-addresses-base-sepolia)
-10. [Local Development Setup](#️-local-development-setup)
-11. [Environment Variables](#-environment-variables)
-12. [Tech Stack](#-tech-stack)
-13. [Team](#-team-falcons)
+<br/>
 
----
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![Stellar](https://img.shields.io/badge/Stellar-7B2FBE?style=flat-square&logo=stellar&logoColor=white)
+![Soroban](https://img.shields.io/badge/Soroban-Smart%20Contracts-FF6B35?style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat-square&logo=typescript&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&logo=javascript&logoColor=black)
+![Sarvam AI](https://img.shields.io/badge/Sarvam%20AI-30B-EC4899?style=flat-square)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Styled Components](https://img.shields.io/badge/Styled%20Components-DB7093?style=flat-square&logo=styled-components&logoColor=white)
+![Freighter](https://img.shields.io/badge/Freighter-Wallet-5B21B6?style=flat-square)
+![Li.Fi](https://img.shields.io/badge/Li.Fi-Aggregator-F59E0B?style=flat-square)
 
-## 🎯 The Problem & Vision
-
-### Why Gas is Broken
-
-In traditional Web3, every on-chain interaction requires ETH (or the chain's native token) in your wallet — even if you only want to swap stablecoins. This creates an absurd bootstrapping paradox: users need ETH to get started, but they need to get started before they can acquire ETH.
-
-```
-Normal Flow (Broken)                    Spectra Flow (Fixed)
-─────────────────────                   ────────────────────
-User wants to swap $10 USDC             User wants to swap $10 TYI
-         ↓                                       ↓
-"You need ETH for gas"                   Type: "swap 10 TYI for ETH"
-         ↓                                       ↓
-Buys ETH on a CEX                         AI Agent parses intent
-         ↓                                       ↓
-Sends ETH to wallet                       Sign EIP-712 payload
-         ↓                                       ↓
-Now pays gas to swap                  UGF deducts fee in TYI
-         ↓                                       ↓
-Still needs ETH for next tx           ✅ ETH arrives. 0 ETH spent.
-```
-
-### The Spectra Vision
-
-Spectra is a fully vertically-integrated DeFi platform where:
-
-- An **AI Agent** understands your financial intent in plain English
-- A **gasless relayer network** executes it on-chain
-- A **tiered SaaS subscription model** powers access control
-- **Soulbound NFT badges** prove your membership on-chain
+</div>
 
 ---
 
-## 🏗️ Platform Overview
+## 📋 Table of Contents
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        SPECTRA PLATFORM                         │
-├───────────────┬──────────────────┬──────────────────────────────┤
-│  🤖 AI AGENT  │   💱 EXCHANGE    │    🎨 NFT MINT ENGINE        │
-│               │                  │                              │
-│ Sarvam AI NLP │ TYI ↔ ETH ↔ USDC│ Alpha / Vector / Nexus Tiers │
-│ Intent Parser │ Live Quote Feed  │ Soulbound Badge Minting      │
-│ EIP-712 Sign  │ Flexible Pairs   │ Spline 3D Interactive View   │
-│ UGF Relay     │ UGF Gasless Swap │ Cancel & Burn NFT            │
-└───────────────┴──────────────────┴──────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                     UGF GASLESS LAYER                           │
-│  Quote → Approve Forwarder → x402 Payment → Sponsor & Execute  │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                   BASE SEPOLIA (Chain 84532)                    │
-│  SpectraExchange  │  SpectraSaaS  │  SpectraNFT  │  MockUSD    │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Pages & Routes
-
-| Route | Page | Description |
-|-------|------|-------------|
-| `/` | Home | Cinematic landing with Spline 3D hero, live terminal preview |
-| `/agent` | GlassTerminal | AI-powered conversational swap agent |
-| `/exchange` | Exchange | Manual dual-asset swap console with TradingView charts |
-| `/mint` | MintConsole | NFT subscription badge minting & management |
-| `/about` | About | Platform docs, architecture, and team |
-| `/journal` | Journal | Transaction history log |
-| `/admin` | Admin | Admin-only panel for contract management |
+1. [The Vision](#the-vision)
+2. [Market Problem](#market-problem)
+3. [Business Model](#business-model)
+4. [Architecture Overview](#architecture-overview)
+5. [The Architectural Transition](#the-architectural-transition)
+6. [AI Orchestration Engine](#ai-orchestration-engine)
+7. [Gasless Execution Layer](#gasless-execution-layer)
+8. [Smart Contracts: Profile & NFT SaaS](#smart-contracts-profile--nft-saas)
+9. [Exchange & Cross-Chain Bridge](#exchange--cross-chain-bridge)
+10. [Frontend Architecture](#frontend-architecture)
+11. [Project Structure](#project-structure)
+12. [Environment Setup](#environment-setup)
+13. [Blockchain Innovation](#blockchain-innovation)
+14. [Team Falcons](#team-falcons)
 
 ---
 
-## 🏛️ Application Architecture
+## The Vision
+
+**Spectra v2** is a fully on-chain, AI-orchestrated DeFi operating system built on the Stellar blockchain. It allows users to express financial intent in plain language — "Swap 50 XLM for EURC" — and have an autonomous AI agent parse, validate, preview with live charts, and execute the transaction **gaslessly on Stellar Testnet**, all without the user ever writing a single piece of code or navigating a complex DEX UI.
+
+The core thesis: **The wallet is the platform. The agent is the interface. The blockchain is the backend.**
+
+```mermaid
+graph TD
+    A[User Types Intent in English/Hindi/Any Language] --> B[Sarvam AI 30B LLM]
+    B --> C{Parse Intent}
+    C -->|swap| D[Stellar Path Payment]
+    C -->|bridge| E[Li.Fi Cross-Chain Aggregator]
+    C -->|mint| F[Soroban NFT Contract]
+    D --> G[Horizon Testnet]
+    E --> H[Base / EVM Chains]
+    F --> G
+    G --> I[Gasless Fee-Bump Relay]
+    I --> J[Transaction Confirmed]
+    J --> K[Live Explorer Link in Chat]
+```
+
+---
+
+## Market Problem
+
+The DeFi space sits at a critical inflection point. Despite $50B+ in daily on-chain volume, **retail adoption remains stubbornly low** due to three hard blockers:
+
+```mermaid
+pie title DeFi User Drop-off Points (2024 Research)
+    "Wallet/Gas Complexity" : 38
+    "Confusing DEX UIs" : 27
+    "Fear of Signing Transactions" : 21
+    "Network/Asset Confusion" : 14
+```
+
+### Core Pain Points
+
+| Problem | Current Reality | Spectra Solution |
+|---|---|---|
+| **Gas Friction** | Users need XLM/ETH just to start | Fee-Bump relay sponsors all fees |
+| **Intent Translation** | Users must know token symbols, slippage, AMM curves | Sarvam AI parses natural language |
+| **Cross-Chain Complexity** | 4-6 manual bridge steps | Single agent command routes through Li.Fi |
+| **Blind Signing** | Users sign without price context | TradingView chart appears inline before confirmation |
+| **Account Abstraction** | Smart wallets require setup | Freighter native + gasless relayer works day one |
+
+### Market Opportunity
+
+```mermaid
+graph LR
+    A["Global DeFi Market<br/>$100B+ TVL"] --> B["Retail-Accessible DeFi<br/>Currently < 5% users"]
+    B --> C["Language-Native AI DeFi<br/>Spectra's Target"]
+    C --> D["2.5B+ Multilingual<br/>Mobile Users in Emerging Markets"]
+```
+
+Emerging markets — India, Southeast Asia, Africa — represent the largest untapped DeFi audience. They're mobile-first, multilingual, and underserved by existing English-centric DeFi tooling. Spectra's Sarvam AI integration (built in India, optimized for Indic languages) speaks their language — literally.
+
+---
+
+## Business Model
+
+Spectra operates a **Subscription-Gated SaaS model on-chain**, where access tiers are tokenized as Stellar Classic Assets and verified through Soroban smart contracts — no centralized database required.
+
+```mermaid
+graph TD
+    subgraph "Free Tier - Alpha"
+        A1[Read-only Terminal]
+        A2[Public Data Feeds]
+        A3[10 Daily Agent Usages]
+    end
+
+    subgraph "Pro Tier - Vector [150 XLM/MO]"
+        B1[Full Agent Execution]
+        B2[Private Data Channels]
+        B3[15 Daily Agent Usages]
+        B4[AIPRO Token in Wallet]
+    end
+
+    subgraph "Enterprise Tier - Nexus [300 XLM/MO]"
+        C1[Root Terminal Access]
+        C2[Unlimited Data Pipelines]
+        C3[30 Daily Agent Usages]
+        C4[AIENT Token in Wallet]
+        C5[Priority Relayer Routing]
+    end
+
+    User -->|Connect Freighter| Alpha
+    Alpha --> |Mint AIPRO via Horizon| Vector
+    Vector --> |Upgrade to AIENT via Horizon| Nexus
+    Nexus -->|Return AIENT to Issuer| Vector
+```
+
+### Tokenomic Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User Wallet
+    participant SC as Spectra Frontend
+    participant H as Horizon Testnet
+    participant I as Issuer Account
+    participant SB as Soroban (Profile)
+
+    U->>SC: Click "Mint Subscription Badge"
+    SC->>H: Load user account + sequence
+    SC->>U: Sign ChangeTrust + Payment XDR (Freighter)
+    U-->>SC: Signed XDR
+    SC->>I: Co-sign with Issuer Secret
+    I->>H: Submit multi-sig transaction
+    H-->>U: 1.0 AIENT credited to wallet
+    SC->>SB: Read profile & tier (Soroban RPC)
+    SC-->>U: UI unlocked for Nexus tier
+```
+
+**Revenue Streams:**
+- Monthly subscription in XLM (deflationary utility)
+- Agent usage fees (per-query at scale)
+- Relayer fee margin (sponsored tx fees + small spread)
+- Cross-chain bridge aggregation commission (via Li.Fi fee structure)
+
+---
+
+## Architecture Overview
+
+Spectra v2 is built as a **layered, modular architecture** separating AI cognition, blockchain execution, and SaaS verification into distinct, composable layers.
+
+```mermaid
+graph TB
+    subgraph UI["Presentation Layer (React + Styled Components)"]
+        P1[Agent Terminal - GlassTerminal.jsx]
+        P2[Exchange UI - SwapBox.jsx]
+        P3[Mint Console - MintConsole.jsx]
+        P4[Profile Dashboard]
+        P5[Cross-Chain Selector]
+    end
+
+    subgraph AI["AI Orchestration Layer"]
+        AI1[Sarvam AI 30B - Intent Parser]
+        AI2[Multilingual NLP Engine]
+        AI3[Intent Schema Validation]
+        AI4[Retry + Rate Limit Manager]
+    end
+
+    subgraph EXEC["Execution Layer"]
+        E1[Stellar Horizon - Path Payments]
+        E2[Gasless Fee-Bump Relayer]
+        E3[Li.Fi Bridge Aggregator]
+        E4[Freighter Wallet Signing]
+    end
+
+    subgraph CHAIN["Soroban Smart Contract Layer"]
+        SC1[SpectraProfile.sol - On-chain identity]
+        SC2[NFT Contract - Tier badge verification]
+        SC3[Soroban RPC Client]
+    end
+
+    subgraph SAAS["SaaS Verification Layer"]
+        S1[Tier Verification via Horizon Balances]
+        S2[AIENT / AIPRO Asset State Machine]
+        S3[Rate Limit Context]
+    end
+
+    UI --> AI
+    AI --> EXEC
+    EXEC --> CHAIN
+    CHAIN --> SAAS
+    SAAS --> UI
+```
+
+---
+
+## The Architectural Transition
+
+This section documents the **critical engineering decision** at the heart of Spectra v2: the migration from a fully Soroban-smart-contract-based execution model to a **hybrid AI-orchestrated + relayer-aggregator model** that preserves Soroban contracts only where they add irreplaceable value.
+
+### Phase 1: Original Architecture (Soroban-First)
+
+In the original design, every on-chain action — swapping tokens, paying subscription fees, reading balances — was routed through Soroban smart contracts using the Stellar SDK's contract invocation client.
+
+```mermaid
+graph LR
+    A[User Intent] --> B[Frontend]
+    B --> C[Soroban Contract Invoke]
+    C --> D[RPC Simulation]
+    D --> E[Freighter Sign]
+    E --> F[Submit via RPC]
+```
+
+**Problems encountered:**
+- Soroban SAC (Stellar Asset Contracts) were often unfunded or undeployed on Testnet
+- `Error(WasmVm, MissingValue)` — contract functions missing from deployed WASM
+- `Error(Contract, #1)` — re-entrant calls failing due to simulation vs actual state mismatch  
+- `Error(Contract, #10)` — zero balance edge cases in SAC transfer operations
+- Soroban RPC simulation lag caused 3-8 second delays per operation
+
+### Phase 2: The Hybrid Pivot
+
+After extensive debugging, the team made a **deliberate, principle-driven architectural decision**:
+
+> *"Use Soroban smart contracts where they provide irreplaceable value (identity, SaaS proofs, NFT verification). Use Stellar's classical Horizon API for everything else — it is battle-tested, instant, and 100% reliable on Testnet."*
+
+```mermaid
+graph TB
+    subgraph BEFORE["Before: Everything Through Soroban"]
+        B1[Swap] --> B2[SAC invoke_contract]
+        B3[Balance] --> B4[SAC token.balance]
+        B5[Mint NFT] --> B6[Soroban NFT.mint]
+        B7[Profile] --> B8[Soroban Profile.create]
+    end
+
+    subgraph AFTER["After: Hybrid Model"]
+        A1[Swap] --> A2[Horizon Path Payment]
+        A3[Balance] --> A4[Horizon accounts API]
+        A5[Mint SaaS Badge] --> A6[Horizon Classic Asset Payment]
+        A7[Profile] --> A8[Soroban Profile.create ✓ Preserved]
+        A9[NFT Verification] --> A10[Soroban NFT.user_token_id ✓ Preserved]
+    end
+```
+
+### Decision Matrix: What Stays on Soroban
+
+| Operation | Soroban | Horizon Classical | Reason |
+|---|---|---|---|
+| **User Profile (create/update/read)** | ✅ Preserved | ❌ | Censorship-resistant on-chain identity |
+| **NFT Tier Verification** | ✅ Preserved | ❌ | Tamper-proof badge ownership proof |
+| **Token Swaps (XLM/USDC/EURC)** | ❌ Removed | ✅ Path Payment | Faster, more reliable, less gas |
+| **XLM Balance Read** | ❌ Removed | ✅ `/accounts/{id}` | Instant, no simulation needed |
+| **Subscription Mint/Burn** | ❌ Removed | ✅ Classic Asset Ops | Simpler multi-sig pattern |
+| **Cross-Chain Bridge** | ❌ N/A | ❌ N/A | ✅ Li.Fi Aggregator |
+
+---
+
+## AI Orchestration Engine
+
+The **Sarvam AI 30B** model serves as Spectra's cognitive core — the layer that translates raw human intent into structured, executable blockchain transactions.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant GT as GlassTerminal (React)
+    participant SA as Sarvam AI 30B
+    participant RL as Rate Limit Guard
+    participant EXEC as Execution Engine
+
+    U->>GT: "Swap 10 XLM for USDC" (any language)
+    GT->>RL: Check rate limit (free tier: 10/day)
+    RL-->>GT: Permitted
+    GT->>SA: POST /v1/chat/completions
+    Note over SA: Parse intent with 15s timeout<br/>2 retries with exponential backoff
+    SA-->>GT: { action: "swap", amount: "10", token: "USDC" }
+    GT->>GT: Render Intent Card
+    GT->>GT: Show TradingView Chart (BINANCE:XLMUSDT)
+    U->>GT: Click "Confirm Execution"
+    GT->>EXEC: Execute swap(XLM → USDC, 10)
+    EXEC-->>GT: { hash: "abc123..." }
+    GT->>U: ✅ Success + Stellar Expert Link
+```
+
+### Intent Schema
+
+The AI engine outputs a strictly typed JSON object validated against a DeFi action schema:
+
+```json
+{
+  "action": "swap | mint | burn | bridge | transfer | stake | lend | borrow",
+  "amount": "10",
+  "token": "USDC"
+}
+```
+
+**Multilingual Support:** The Sarvam 30B model natively processes prompts in Hindi, Marathi, Tamil, Spanish, French, German and returns structured English JSON regardless of input language — enabling DeFi access for billions of non-English speakers.
+
+### Rate Limiting Architecture
+
+```mermaid
+graph LR
+    A[User Query] --> B{Tier Check}
+    B -->|Alpha| C[10 queries/day]
+    B -->|Vector| D[15 queries/day]
+    B -->|Nexus| E[30 queries/day]
+    C --> F[RateLimitContext]
+    D --> F
+    E --> F
+    F --> G{Within Limit?}
+    G -->|Yes| H[Sarvam API Call]
+    G -->|No| I[Show Upgrade Prompt]
+```
+
+---
+
+## Gasless Execution Layer
+
+Spectra's **Gasless Relayer** is one of its most significant blockchain innovations. Users on Testnet — and in production — never need to hold XLM specifically for gas fees.
+
+### Fee-Bump Transaction Pattern (CAP-0015)
+
+```mermaid
+sequenceDiagram
+    participant U as User Wallet
+    participant SC as Spectra Frontend
+    participant R as Treasury Relayer
+    participant H as Stellar Horizon
+
+    U->>SC: Sign inner transaction (0 fee)
+    SC->>R: Send signed XDR to relayer
+    R->>R: Wrap in Fee-Bump transaction
+    Note over R: Treasury account pays 120,000 stroops<br/>User pays ZERO gas
+    R->>H: Submit FeeBump(treasury, inner_tx)
+    H-->>R: Transaction confirmed
+    R-->>SC: { hash, status: "SUCCESS" }
+    SC-->>U: Explorer link in chat
+```
+
+**Implementation:** [`gaslessExecution.ts`](src/lib/stellar/gaslessExecution.ts)
+
+```typescript
+// Wraps any user-signed XDR in a Stellar Fee-Bump transaction
+export async function relayGaslessTransaction(signedXdr: string): Promise<GaslessRelayResult> {
+  const feeBumpTx = TransactionBuilder.buildFeeBumpTransaction(
+    treasuryKeypair,
+    '120000', // 0.012 XLM sponsored per transaction
+    innerTransaction,
+    networkPassphrase
+  );
+  feeBumpTx.sign(treasuryKeypair);
+  return await server.submitTransaction(feeBumpTx);
+}
+```
+
+This leverages **Stellar's native CAP-0015 Fee-Bump mechanism** — no custom relay contracts, no L2 infrastructure, no trusted intermediary smart contracts. Pure protocol-level account abstraction.
+
+---
+
+## Smart Contracts: Profile & NFT SaaS
+
+While execution was migrated to classical Stellar, two Soroban contracts remain as the **trust anchors** of the Spectra platform:
+
+### 1. SpectraProfile — On-Chain Identity
+
+```mermaid
+graph TD
+    A[User Connects Freighter] --> B[createProfile / updateProfile]
+    B --> C[Soroban RPC Simulation]
+    C --> D[User Signs XDR]
+    D --> E[Relayer Submits via Fee-Bump]
+    E --> F[Profile Stored on Soroban]
+    F --> G[Profile readable by any dApp]
+
+    style F fill:#7B2FBE,color:#fff
+```
+
+The Profile contract stores:
+- `name`, `email`, `phone`, `bio` — user identity
+- `avatarId` — chosen avatar (0-9)
+- `exists` — boolean flag for first-time creation gating
+
+**Contract Address:** `CAIVPYSHCJTMYFOCLLNJXY33377SWJLEIIYQY53UFSU6HJDTEVMATCIJ` (Testnet)
+
+**Why Soroban for Profile?**
+Because on-chain identity is the one data type that must be censorship-resistant, universally readable by any Stellar dApp, and provably owned by the wallet. A Horizon asset can't store structured data. A database can be deleted. A Soroban contract cannot.
+
+### 2. NFT Contract — SaaS Tier Verification
+
+The NFT contract provides cryptographic proof of subscription tier ownership:
+
+```mermaid
+graph LR
+    A[Freighter Wallet] -->|Has 1.0 AIENT| B[Tier = 2 Nexus]
+    A -->|Has 1.0 AIPRO| C[Tier = 1 Vector]
+    A -->|Neither| D[Tier = 0 Alpha]
+    B --> E[Soroban NFT.user_token_id]
+    E --> F[Badge Unlocked in UI]
+    D --> G[Upgrade Prompt]
+```
+
+**Verification Flow:**
+```mermaid
+sequenceDiagram
+    participant F as Frontend
+    participant H as Horizon Testnet
+    participant SB as Soroban NFT
+
+    F->>H: GET /accounts/{publicKey}
+    H-->>F: Account balances[]
+    F->>F: Find AIENT or AIPRO balance from issuer
+    F->>SB: readContract(NFT, "user_token_id", [address])
+    SB-->>F: tokenId (u32)
+    F->>F: Render locked/unlocked badge state
+```
+
+**Why Hybrid?** Tier *verification* stays on Soroban (tamper-proof). Tier *minting* uses classical Horizon multi-sig asset payments (reliable, instant, no simulation errors).
+
+---
+
+## Exchange & Cross-Chain Bridge
+
+### On-Chain Swap via Stellar Path Payment
+
+The exchange engine uses **Stellar's native Horizon Path Payment Strict Send** — the most efficient on-chain swap primitive available:
+
+```mermaid
+graph LR
+    A[User: Swap 10 XLM for USDC] --> B[strictSendPaths API]
+    B --> C{Find Liquidity Paths}
+    C -->|Path found| D[pathPaymentStrictSend Operation]
+    C -->|No path| E[Error: No Liquidity]
+    D --> F[Freighter Signs]
+    F --> G[Horizon Submits]
+    G --> H[USDC credited to wallet]
+```
+
+**Supported Assets (Testnet):**
+
+| Asset | Type | Identifier | SAC Contract |
+|---|---|---|---|
+| **XLM** | Native | `native` | `CDLZFC3...GCYSC` |
+| **USDC** | Classic | `USDC:GBBD47...` | `CCW67C...C4K5` |
+| **EURC** | Classic | `EURC:GB3Q6...` | `CCUUDM...MCGZ` |
+
+### Cross-Chain Bridge Architecture
+
+```mermaid
+graph TB
+    A[User: Bridge 50 XLM to Base] --> B[GlassTerminal Agent]
+    B --> C[bridgeToEvm function]
+    C --> D[Li.Fi Aggregator API]
+    D --> E{Route Discovery}
+    E --> F[Stellar → Base-Sepolia]
+    F --> G[Wormhole / LayerZero / Stargate]
+    G --> H[EVM Wallet receives asset]
+
+    subgraph "Registered Chains"
+        R1[Stellar Testnet]
+        R2[Base Sepolia]
+        R3[Arbitrum Sepolia]
+        R4[Optimism Sepolia]
+    end
+
+    D --> R1
+    D --> R2
+```
+
+**Li.Fi Integration:** [`lib/bridge/lifiAggregator.js`](src/lib/bridge/lifiAggregator.js) — queries Li.Fi's aggregation API to discover optimal cross-chain routes across all major bridges, returning best-price paths without the user needing to know which bridge protocol is used.
+
+---
+
+## Frontend Architecture
+
+Spectra's UI is built on a **Neobrutalist × Dark Glass** design system — a deliberate aesthetic that signals technical credibility while remaining visually arresting.
+
+```mermaid
+graph TD
+    subgraph "App Shell"
+        A[React Router v6]
+        B[AuthContext - Wallet + Profile State]
+        C[ErrorContext - Global Error Boundary]
+        D[RateLimitContext - Agent Usage Tracking]
+    end
+
+    subgraph "Pages"
+        P1[/ - Home - 3D Spline Landing]
+        P2[/agent - AI Terminal]
+        P3[/exchange - Swap + Bridge]
+        P4[/mint - Subscription NFT Engine]
+        P5[/profile - On-chain Identity]
+        P6[/journal - Transaction History]
+        P7[/about - Manifesto]
+    end
+
+    subgraph "Key Components"
+        C1[GlassTerminal - AI Chat + Intent Execution]
+        C2[SwapBox - DEX Interface]
+        C3[MintConsole - SaaS Badge Minting]
+        C4[PricingMatrix - Tier Comparison]
+        C5[CrossChainSelector - Bridge UI]
+        C6[ProfileDashboard - On-chain Profile CRUD]
+    end
+
+    A --> B --> C --> D
+    A --> P1 & P2 & P3 & P4 & P5 & P6 & P7
+    P2 --> C1
+    P3 --> C2 & C5
+    P4 --> C3 & C4
+    P5 --> C6
+```
+
+### Design System
+
+- **Typography:** Geist + Geist Mono (Vercel's typeface, perfect for terminal aesthetics)
+- **Color Language:** Deep blacks (`#0A0A0C`), electric violet (`#B026FF`), emerald success (`#10B981`)
+- **Glassmorphism:** `backdrop-filter: blur(16px)` panels with translucent borders
+- **Animation:** Keyframe geometric spinners, pulse glows for active states
+- **Charts:** TradingView embedded widget — live market data before every trade confirmation
+
+---
+
+## Project Structure
 
 ```
-spectra/
+spectrav2/
 ├── src/
 │   ├── api/
-│   │   └── sarvamAgent.js          ← AI intent parsing engine (Sarvam 30B)
+│   │   ├── sarvamAgent.js          # Sarvam 30B intent parser (NLP → JSON)
+│   │   └── x402Client.ts           # HTTP 402 payment protocol client
+│   │
+│   ├── config/
+│   │   └── contracts.js            # SAC addresses, network config, token decimals
+│   │
+│   ├── context/
+│   │   ├── AuthContext.jsx          # Wallet state, tier, profile, upgradeTier/cancelTier
+│   │   ├── ErrorContext.jsx         # Global error boundary + dialog
+│   │   └── RateLimitContext.jsx     # Agent usage rate tracking per tier
+│   │
+│   ├── lib/
+│   │   ├── stellar/
+│   │   │   ├── client.js            # Soroban RPC client + contract invoker
+│   │   │   ├── gaslessExecution.ts  # CAP-0015 Fee-Bump relayer
+│   │   │   ├── relayer.js           # Relay routing utilities
+│   │   │   └── contracts/
+│   │   │       ├── profile.js       # Soroban SpectraProfile read/write
+│   │   │       ├── nft.js           # Soroban NFT mint/burn/verify
+│   │   │       ├── exchange.js      # Horizon Path Payment swap
+│   │   │       ├── token.js         # Soroban token balance reader
+│   │   │       ├── bridge.js        # EVM bridge initiation
+│   │   │       └── feedback.js      # On-chain feedback contract
+│   │   │
+│   │   └── bridge/
+│   │       ├── lifiAggregator.js    # Li.Fi multi-chain bridge aggregator
+│   │       ├── intentParser.js      # Bridge-specific intent parser
+│   │       └── registryService.js   # Supported chain + token registry
+│   │
+│   ├── services/
+│   │   ├── mintAsset.js             # Horizon multi-sig mint/burn transactions
+│   │   └── tierVerification.js      # Horizon balance → tier level resolver
+│   │
 │   ├── components/
 │   │   ├── agent/
-│   │   │   └── GlassTerminal.jsx   ← Full agentic wallet UI
+│   │   │   └── GlassTerminal.jsx    # Full AI agent chat + execution terminal
 │   │   ├── exchange/
-│   │   │   └── SwapBox.jsx         ← Dual-asset swap component
-│   │   ├── home/
-│   │   │   ├── CinematicHero.jsx   ← 3D animated landing section
-│   │   │   └── HeroDesign.jsx      ← Spline scene renderer
+│   │   │   ├── SwapBox.jsx          # Token swap UI
+│   │   │   └── CrossChainSelector.jsx # Bridge chain/token selector
 │   │   ├── mint/
-│   │   │   └── MintConsole.jsx     ← NFT tier selection & minting
+│   │   │   ├── MintConsole.jsx      # Badge mint/cancel interface
+│   │   │   └── PricingMatrix.jsx    # Tier comparison card grid
 │   │   └── layout/
-│   │       ├── FluidNav.jsx        ← Global navigation bar
-│   │       └── MainLayout.jsx      ← App shell wrapper
-│   ├── config/
-│   │   └── contracts.js            ← All addresses, ABIs, and network config
-│   ├── hooks/
-│   │   └── useUGF.js               ← UGF SDK orchestration hook
-│   ├── pages/                      ← Route-level page components
-│   └── styles/
-│       ├── spectra-parity.css      ← Design system tokens & components
-│       └── final.css               ← Global imports
+│   │       └── ErrorDialog.jsx      # Glassmorphic error alert modal
+│   │
+│   └── pages/
+│       ├── Agent.jsx                # /agent route wrapper
+│       ├── Exchange.jsx             # /exchange — swap + TradingView charts
+│       ├── Mint.jsx                 # /mint route wrapper
+│       ├── ProfileDashboard.jsx     # /profile — Soroban identity CRUD
+│       ├── Journal.jsx              # /journal — transaction log
+│       ├── About.jsx                # Project manifesto
+│       └── Home.jsx                 # Landing (3D Spline scene)
+│
 ├── contracts/
 │   └── src/
-│       ├── SpectraExchange.sol     ← AMM-style exchange with quota enforcement
-│       ├── SpectraSaaS.sol         ← Subscription management contract
-│       └── SpectraNFT.sol          ← Soulbound ERC-721 badge contract
-├── vite.config.js                  ← Vite + assetsInclude for .splinecode
-└── index.html                      ← Spline viewer web-component loader
+│       └── SpectraProfile.sol       # Solidity reference (Soroban Rust version deployed)
+│
+├── scripts/
+│   └── setup-issuer.js              # Issuer account funding + trustline setup
+│
+├── .env.example                     # All required env variables documented
+└── vite.config.js                   # Vite + proxy config (Sarvam AI CORS bypass)
 ```
 
 ---
 
-## 🔍 Module Deep-Dives
-
-### 1. AI Agentic Terminal — GlassTerminal
-
-The `GlassTerminal` is Spectra's flagship feature — a conversational, AI-powered wallet interface styled like a hacker's glass-morphism terminal.
-
-#### How it Works
-
-```
-User types: "swap 100 TYI for ETH"
-        ↓
-sarvamAgent.parseDefiIntent(prompt)   ← Sarvam 30B LLM call
-        ↓
-Returns structured JSON intent:
-{
-  "action": "swap",
-  "amount": "100",
-  "token": "TYI"
-}
-        ↓
-GlassTerminal renders IntentCard with:
-  - Editable amount input
-  - Route: TYI → ETH
-  - Live quote from SpectraExchange.getQuote()
-        ↓
-User edits amount (optional) → clicks CONFIRM
-        ↓
-handleSignAndExecute():
-  1. Approve SpectraExchange to spend tokenIn
-  2. Encode swap() calldata via ethers.Interface
-  3. Call useUGF().execute({ target, data, signer })
-        ↓
-Transaction confirmed on-chain gaslessly ✅
-```
-
-#### Sidebar Portfolio Value
-
-The terminal sidebar shows a live **Total Asset Value (USD)** which aggregates across all holdings:
-
-```
-Total USD = (TYI balance × $1.00)
-          + (USDC balance × $1.00)
-          + (ETH balance × $3,500.00)
-```
-
----
-
-### 2. Exchange Engine
-
-The Exchange page provides a fully manual swap interface with dual-asset dropdowns, live quotes, and TradingView price charts.
-
-#### Quote Flow
-
-```javascript
-// Exchange.jsx — reactive quote fetching
-useEffect(() => {
-  const fetchQuote = async () => {
-    const amountIn = ethers.parseUnits(payAmount, decimalsIn);   // TYI = 6 dec, ETH = 18 dec
-    const tokenIn  = resolveTokenAddress(payAsset);
-    const tokenOut = resolveTokenAddress(selectedAsset);
-
-    // On-chain view call — no gas required
-    const amountOut = await exchange.getQuote(tokenIn, tokenOut, amountIn);
-
-    setReceiveAmount(ethers.formatUnits(amountOut, decimalsOut));
-  };
-
-  fetchQuote();
-}, [payAmount, payAsset, selectedAsset]);
-```
-
-#### Supported Token Pairs
-
-| Pay → Receive | Rate |
-|--------------|------|
-| TYI → ETH | 1 ETH = 3,500 TYI |
-| ETH → TYI | 1 TYI = 0.000285 ETH |
-| USDC → ETH | 1 ETH = 3,500 USDC |
-| ETH → USDC | 1 USDC = 0.000285 ETH |
-| TYI ↔ USDC | 1:1 (same decimals) |
-
----
-
-### 3. Subscriptive NFT Engine — Mint Console
-
-The MintConsole renders 3D interactive Spline badge previews for each subscription tier, supports gasless minting, and provides a cancel-and-burn flow.
-
-#### Tier Matrix
-
-| Tier | Price | Daily TXs | Badge | Spline Scene |
-|------|-------|-----------|-------|-------------|
-| **ALPHA** | Free | 20 | `/1.png` | `/1.splinecode` |
-| **VECTOR** | $15/mo | 60 | `/2.png` | `/2.splinecode` |
-| **NEXUS** | $49/mo | 100 | `/3.png` | `/3.splinecode` |
-
-#### Mint Execution Flow
-
-```
-1. User selects tier (VECTOR or NEXUS)
-2. Approve TYI allowance for SpectraSaaS
-3. saas.subscribe(tier.plan) — sets on-chain tier
-4. Encode mintVectorBadge() or mintNexusBadge() calldata
-5. useUGF().execute() — gasless badge mint via UGF relayer
-6. fetchBalances() — polls for updated NFT token ownership
-```
-
-#### Cancel / Burn Flow
-
-If a user cancels their subscription, a two-step on-chain sequence executes:
-
-```
-1. saas.cancelSubscription()  → Resets tier to ALPHA on-chain
-2. nft.burn(ownedTokenId)     → Burns the soulbound badge NFT
-```
-
-The user is shown a confirmation popup before this executes: _"Are you sure you want to cancel the NFT? This will remove the benefits too."_
-
----
-
-## 📜 Smart Contract Suite
-
-### `SpectraExchange.sol`
-
-The core AMM-style exchange contract. Enforces daily transaction quotas via `SpectraSaaS` before every swap.
-
-```solidity
-// Decimal-aware pricing model
-function getQuote(
-    address tokenIn,
-    address tokenOut,
-    uint256 amountIn
-) public view returns (uint256 amountOut) {
-    // TYI/USDC = 6 decimals, ETH/WETH = 18 decimals
-    // ETH price = $3500
-
-    if (tokenIn == mockUSD && tokenOut == WETH) {
-        // TYI(6dec) → ETH(18dec)
-        return (amountIn * 10**12) / 3500;
-    } else if (tokenIn == WETH && tokenOut == mockUSD) {
-        // ETH(18dec) → TYI(6dec)
-        return (amountIn * 3500) / 10**12;
-    } else {
-        return amountIn; // 1:1 for same-decimal stablecoins
-    }
-}
-```
-
-### `SpectraSaaS.sol`
-
-Manages Web3-native monthly subscriptions. Records each transaction against daily limits and can auto-deduct renewal fees if allowance is set.
-
-```solidity
-enum PlanTier { ALPHA, VECTOR, NEXUS }
-
-struct TierInfo {
-    uint256 dailyTxLimit;
-    uint256 monthlyFee;  // in TYI (6 decimals)
-    bool    hasNFTAccess;
-}
-
-function subscribe(PlanTier _tier) external nonReentrant { ... }
-function cancelSubscription() external { ... }
-function renewSubscription(address _user) external nonReentrant { ... }
-function recordTransaction(address _user) external { ... }
-```
-
-### `SpectraNFT.sol`
-
-Soulbound ERC-721 contract. Badges cannot be transferred — only minted (by eligible subscribers) or burned (by the badge holder).
-
-```solidity
-// Soulbound enforcement — blocks all transfers except mint and burn
-function _update(address to, uint256 tokenId, address auth)
-    internal virtual override returns (address)
-{
-    address from = _ownerOf(tokenId);
-    if (from != address(0) && to != address(0)) {
-        revert NonTransferable();
-    }
-    return super._update(to, tokenId, auth);
-}
-
-// User-callable burn
-function burn(uint256 tokenId) external {
-    require(ownerOf(tokenId) == msg.sender, "Not the owner");
-    _burn(tokenId);
-}
-```
-
----
-
-## ⛽ UGF Gasless Pipeline
-
-Spectra uses the `@tychilabs/ugf-testnet-js` SDK inside the `useUGF` custom hook to power all gasless executions.
-
-### Pipeline Steps
-
-```
-INITIALIZING
-    ↓
-AUTHENTICATING     ← client.auth.login(signer)
-    ↓
-QUOTING            ← client.quote.get({ tx_object, payer, chain })
-    ↓
-CHECKING_ALLOWANCE ← tokenContract.allowance(user, forwarder)
-    ↓
-APPROVING_FORWARDER (if needed) ← tokenContract.approve(forwarder, MaxUint256)
-    ↓
-SUBMITTING_PAYMENT ← client.payment.x402.execute({ quote, signer })
-    ↓
-EXECUTING_ON_CHAIN ← client.chains.evm.sponsorAndExecute(digest, signer, txBuilder)
-    ↓
-SUCCESS ✅
-```
-
-### `useUGF` Hook — Core Execute Function
-
-```javascript
-// src/hooks/useUGF.js
-
-const execute = useCallback(async ({ target, data, paymentToken, signer }) => {
-  const client = new TestnetUGFClient();
-
-  // 1. Authenticate with UGF network
-  await client.auth.login(signer);
-
-  // 2. Request a quote — UGF estimates the TYI cost of sponsoring gas
-  const q = await client.quote.get({
-    payment_coin: 'TYI_MOCK_USD',
-    payer_address: address,
-    payment_chain: '84532',        // Base Sepolia
-    tx_object: JSON.stringify({
-      from: address,
-      to: target,
-      data: data || '0x',
-      value: '0x0'
-    }),
-    dest_chain_id: '84532',
-  });
-
-  // 3. Ensure UGF Forwarder has allowance for TYI payment
-  const forwarder = await client.registry.getOption('TYI_MOCK_USD');
-  if (allowance < q.payment_amount) {
-    await tokenContract.approve(forwarder, MaxUint256);
-  }
-
-  // 4. Settle payment via x402 protocol
-  await client.payment.x402.execute({ quote: q, signer, token: 'TYI_MOCK_USD' });
-
-  // 5. Execute the sponsored transaction on-chain
-  const result = await client.chains.evm.sponsorAndExecute(
-    q.digest,
-    signer,
-    async (s) => ({ to: target, data, value: 0n })
-  );
-
-  return result; // { userTxHash, ... }
-}, []);
-```
-
----
-
-## 🧠 Agent Orchestration Architecture
-
-This is the full lifecycle of a single user command through the Spectra AI Agent system.
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│  USER INPUT: "swap half my TYI for ETH"                          │
-└──────────────────────────┬───────────────────────────────────────┘
-                           ↓
-┌──────────────────────────────────────────────────────────────────┐
-│  LAYER 1 — SARVAM AI INTENT PARSER (sarvamAgent.js)             │
-│                                                                  │
-│  Model: sarvam-30b (OpenAI-compatible REST API)                  │
-│  Temp:  0.1  (high determinism for structured output)            │
-│  Mode:  json_object response_format                              │
-│                                                                  │
-│  System Prompt enforces strict output schema:                    │
-│  { action, amount, token } OR { error: "clarify..." }            │
-│                                                                  │
-│  Retry:  3 attempts with exponential back-off (800ms base)       │
-│  Timeout: 15,000ms per attempt                                   │
-│                                                                  │
-│  Output: { action: "swap", amount: "0.5", token: "TYI" }        │
-└──────────────────────────┬───────────────────────────────────────┘
-                           ↓
-┌──────────────────────────────────────────────────────────────────┐
-│  LAYER 2 — INTENT CARD RENDERER (GlassTerminal.jsx)             │
-│                                                                  │
-│  ┌─────────────────────────────────────┐                         │
-│  │  INTENT DETECTED                    │                         │
-│  │  Action:  SWAP                      │                         │
-│  │  Amount:  [  50.00  ] ← editable   │                         │
-│  │  Token:   TYI → ETH                │                         │
-│  │  Quote:   ~0.01428 ETH             │                         │
-│  │                                     │                         │
-│  │  [CONFIRM & SIGN]  [DISMISS]        │                         │
-│  └─────────────────────────────────────┘                         │
-│                                                                  │
-│  User can edit amount before executing                           │
-└──────────────────────────┬───────────────────────────────────────┘
-                           ↓
-┌──────────────────────────────────────────────────────────────────┐
-│  LAYER 3 — EIP-712 CRYPTOGRAPHIC HANDSHAKE                      │
-│                                                                  │
-│  MetaMask prompts user for signature                             │
-│  Human-in-the-Loop safety: No automation without consent        │
-│  Signature authorizes UGF Forwarder to deduct TYI               │
-└──────────────────────────┬───────────────────────────────────────┘
-                           ↓
-┌──────────────────────────────────────────────────────────────────┐
-│  LAYER 4 — UGF GASLESS RELAYER (useUGF.js hook)                 │
-│                                                                  │
-│  Auth → Quote → Allowance Check → x402 Payment → Execute        │
-│                                                                  │
-│  UGF sponsors 100% of native gas on Base Sepolia                │
-│  User's ETH balance is never touched                             │
-└──────────────────────────┬───────────────────────────────────────┘
-                           ↓
-┌──────────────────────────────────────────────────────────────────┐
-│  LAYER 5 — ON-CHAIN EXECUTION (SpectraExchange.sol)             │
-│                                                                  │
-│  1. enforceQuota() — checks daily SaaS tier limit               │
-│  2. transferFrom(user, exchange, amountIn)                       │
-│  3. getQuote() — decimal-aware pricing                           │
-│  4. transfer(user, amountOut)                                    │
-│  5. emit SwapExecuted(...)                                       │
-└──────────────────────────┬───────────────────────────────────────┘
-                           ↓
-┌──────────────────────────────────────────────────────────────────┐
-│  LAYER 6 — POST-EXECUTION SYNC                                   │
-│                                                                  │
-│  Balance polling at 2s, 5s, 8s intervals                         │
-│  Terminal sidebar updates Total Portfolio Value (USD)            │
-│  Transaction hash displayed with BaseScan link                   │
-└──────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🔄 End-to-End Workflow Walkthrough
-
-### Scenario: New User — Complete Journey
-
-```
-STEP 1: ONBOARDING
-  User visits Spectra → connects MetaMask
-  App detects Base Sepolia (chainId: 84532) — auto-switches if wrong chain
-  Claims TYI Mock USD from faucet: universalgasframework.com/faucets
-
-STEP 2: SUBSCRIBE
-  Navigate to /mint
-  Select VECTOR tier ($15/mo)
-  Approve TYI allowance → saas.subscribe(1)
-  Gasless mint: mintVectorBadge() via UGF
-  Receive soulbound Vector Badge NFT + 60 daily tx quota
-
-STEP 3: SWAP VIA AGENT
-  Navigate to /agent
-  Type: "swap 100 TYI for ETH"
-  Sarvam AI returns: { action: swap, amount: 100, token: TYI }
-  Edit amount if desired (e.g. 50)
-  Click CONFIRM & SIGN → MetaMask EIP-712 signature prompt
-  UGF relayer executes swap on-chain (0 ETH gas spent)
-  ETH arrives in wallet; TYI deducted
-
-STEP 4: MANUAL SWAP
-  Navigate to /exchange
-  Select Pay: ETH, Receive: USDC
-  See live on-chain quote from SpectraExchange.getQuote()
-  Click SWAP → MetaMask confirms approval + swap
-  TradingView chart updates to selected pair
-
-STEP 5: CANCEL SUBSCRIPTION
-  Navigate to /mint
-  Click CANCEL SUBSCRIPTION & BURN NFT
-  Confirm popup: "Are you sure? This will remove the benefits too."
-  Two on-chain txs:
-    → saas.cancelSubscription() resets tier to ALPHA
-    → nft.burn(tokenId) destroys the badge
-```
-
----
-
-## 📍 Deployed Contract Addresses (Base Sepolia)
-
-| Contract | Address |
-|----------|---------|
-| **TYI Mock USD** | `0x27dc1c167aef232bb1e21073304b526726a8727e` |
-| **SpectraSaaS** | `0x7ea1f8d6e7293e9e237a6e9f0a0fd667b1a89158` |
-| **SpectraNFT** | `0xc069dfe82b454fd2631a519a1fb11fe9cbe54ecf` |
-| **SpectraExchange** | `0x40b4195daa1ac703dfbe6f77de39b3ce70c1ac81` |
-
-> 🔎 View on [Base Sepolia Explorer](https://sepolia.basescan.org)
-
----
-
-## 🛠️ Local Development Setup
-
-### Prerequisites
-
-- **Node.js** v18+ or **Bun** (recommended)
-- **MetaMask** browser extension
-- Base Sepolia network configured in MetaMask
-- TYI Mock USD from the [UGF Faucet](https://universalgasframework.com/faucets)
-
-### Installation
+## Environment Setup
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/TychiWallet/spectra.git
-cd spectra
+# Clone
+git clone https://github.com/Precise-Goals/Spectrav2.git
+cd Spectrav2
 
-# 2. Install frontend dependencies
-bun install       # or: npm install
+# Install
+bun install
 
-# 3. Install contract dependencies (for redeployment only)
-cd contracts && npm install && cd ..
+# Configure
+cp .env.example .env
 ```
 
-### Running Locally
+### Required Environment Variables
+
+| Variable | Description | Example |
+|---|---|---|
+| `VITE_SARVAM_API_KEY` | Sarvam AI subscription key | `sarvam_...` |
+| `VITE_STELLAR_RPC_URL` | Soroban RPC endpoint | `https://soroban-testnet.stellar.org` |
+| `VITE_STELLAR_HORIZON_URL` | Horizon API base | `https://horizon-testnet.stellar.org` |
+| `VITE_STELLAR_NETWORK_PASSPHRASE` | Network passphrase | `Test SDF Network ; September 2015` |
+| `VITE_PROFILE_CONTRACT_ID` | SpectraProfile Soroban ID | `CAIVPY...` |
+| `VITE_SAAS_ISSUER_PUBLIC_KEY` | SaaS asset issuer G-address | `GCXCTJ...` |
+| `VITE_SAAS_ISSUER_SECRET_KEY` | Issuer signing key (backend) | `S...` |
+| `VITE_STELLAR_TREASURY_SECRET` | Gasless relayer treasury | `S...` |
+| `VITE_STELLAR_SAC_XLM` | XLM SAC contract address | `CDLZFC...` |
+| `VITE_STELLAR_SAC_USDC` | USDC SAC contract address | `CCW67C...` |
+| `VITE_STELLAR_SAC_EURC` | EURC SAC contract address | `CCUUDM...` |
 
 ```bash
-bun run dev       # or: npm run dev
+# Run development server
+bun dev
+
+# Production build
+bun run build
 ```
 
-Open `http://localhost:5173` in your browser.
+---
 
-### Redeploying Contracts (Optional)
+## Blockchain Innovation
 
-```bash
-cd contracts
+### What Makes Spectra Architecturally Unique
 
-# Deploy all contracts
-npx hardhat run scripts/deploy.cjs --network base-sepolia
+```mermaid
+graph TD
+    subgraph "Innovation 1: Gasless UX"
+        I1A[User signs tx with 0 fee] --> I1B[Treasury fee-bumps via CAP-0015]
+        I1B --> I1C[User never needs gas tokens]
+    end
 
-# Seed exchange with test liquidity
-npx hardhat run scripts/fundExchange.cjs --network base-sepolia
+    subgraph "Innovation 2: AI-First DeFi"
+        I2A[Natural language input] --> I2B[Sarvam 30B parses intent]
+        I2B --> I2C[Typed tx parameters extracted]
+        I2C --> I2D[Chart preview before signing]
+    end
+
+    subgraph "Innovation 3: Hybrid Contract Model"
+        I3A[Profile + NFT: Soroban] --> I3B[Censorship-resistant identity]
+        I3C[Swaps + Balances: Horizon] --> I3D[Zero simulation errors]
+        I3E[Subscriptions: Classic Assets] --> I3F[Instant multi-sig mint/burn]
+    end
+
+    subgraph "Innovation 4: Multilingual Web3"
+        I4A[Hindi / Marathi / Tamil] --> I4B[Sarvam AI understands]
+        I4B --> I4C[Returns English JSON tx]
+        I4C --> I4D[DeFi for 2.5B+ users]
+    end
 ```
 
-After redeployment, update addresses in `src/config/contracts.js`.
+### Comparison with Existing Solutions
+
+| Feature | Spectra v2 | Uniswap | MetaMask Swaps | Squid Router |
+|---|---|---|---|---|
+| **Natural Language Input** | ✅ Any language | ❌ | ❌ | ❌ |
+| **Gasless Execution** | ✅ Fee-Bump relay | ❌ | ❌ | ❌ |
+| **On-chain Identity** | ✅ Soroban Profile | ❌ | ❌ | ❌ |
+| **SaaS on Blockchain** | ✅ Tokenized tiers | ❌ | ❌ | ❌ |
+| **Chart Before Sign** | ✅ Inline TradingView | Separate tab | ❌ | ❌ |
+| **Cross-Chain Bridge** | ✅ Li.Fi aggregator | ❌ | Partial | ✅ |
+| **Multilingual NLP** | ✅ Sarvam 30B | ❌ | ❌ | ❌ |
 
 ---
 
-## 🔐 Environment Variables
+## Team Falcons
 
-Create a `.env` file in the project root:
+> Built for **Stellar Build Station Pune** — India's premier Stellar hackathon event.
 
-```env
-# Required — Sarvam AI API key for the agentic intent parser
-VITE_SARVAM_API_KEY=your_sarvam_api_key_here
+```mermaid
+graph LR
+    T[Team Falcons] --> S1[Full-Stack Development]
+    T --> S2[Blockchain Architecture]
+    T --> S3[AI / NLP Integration]
+    T --> S4[Product Design]
+    T --> S5[Smart Contract Engineering]
+
+    S1 --> P[Spectra v2]
+    S2 --> P
+    S3 --> P
+    S4 --> P
+    S5 --> P
 ```
 
-Get your Sarvam AI key at [sarvam.ai](https://sarvam.ai).
+**Team Falcons** is a group of builders passionate about the intersection of AI and decentralized finance. We believe the next billion DeFi users won't come from Silicon Valley — they'll come from Mumbai, Pune, Bangalore, and beyond. They speak Hindi. They don't know what a gas fee is. And they deserve access to the same financial primitives as anyone else.
+
+Spectra is our answer.
 
 ---
 
-## 🧰 Tech Stack
+## Technical Acknowledgements
 
-### Frontend
+![Stellar](https://img.shields.io/badge/Stellar-Protocol-7B2FBE?style=flat-square&logo=stellar&logoColor=white) — For CAP-0015 Fee-Bump transactions enabling gasless UX
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | React 19 + Vite 8 |
-| Routing | React Router DOM v7 |
-| Blockchain | ethers.js v6 |
-| Gasless Layer | `@tychilabs/ugf-testnet-js` |
-| AI Engine | Sarvam AI (sarvam-30b via REST) |
-| 3D Rendering | Spline Tool (`spline-viewer` web component) |
-| Charts | TradingView React Widgets |
-| Styling | Vanilla CSS + CSS variables design system |
-| Animation | Framer Motion |
+![Sarvam AI](https://img.shields.io/badge/Sarvam%20AI-30B%20LLM-EC4899?style=flat-square) — For India-native multilingual LLM powering the agent
 
-### Smart Contracts
+![Li.Fi](https://img.shields.io/badge/Li.Fi-Bridge%20Aggregator-F59E0B?style=flat-square) — For cross-chain route discovery and aggregation
 
-| Layer | Technology |
-|-------|-----------|
-| Language | Solidity ^0.8.24 |
-| Framework | Hardhat |
-| Libraries | OpenZeppelin (ERC721, Ownable, ReentrancyGuard) |
-| Network | Base Sepolia (Chain ID: 84532) |
+![TradingView](https://img.shields.io/badge/TradingView-Charts-2962FF?style=flat-square&logo=tradingview&logoColor=white) — For inline pre-trade market context
+
+![Freighter](https://img.shields.io/badge/Freighter-Stellar%20Wallet-5B21B6?style=flat-square) — For native Stellar signing integration
 
 ---
 
-## 👥 Team Falcons
+<div align="center">
 
-- **Sarthak Patil** - sarthakpatil.ug@gmail.com
-- **Utkarsh Vidwat** - utkarshvidwat@gmail.com
-- **Jay Magar** - jaymagar310@gmail.com
-- **Omkar Rane** - omkarrane0934@gmail.com
-- **Sarthak Godse** - sarthakgodse03@gmail.com
+**Built with ⚡ by Team Falcons**
 
----
+*Stellar Build Station Pune · 2026*
 
-## 🌟 Community & Interoperability
+[![GitHub](https://img.shields.io/badge/GitHub-Precise--Goals%2FSpectrav2-181717?style=for-the-badge&logo=github)](https://github.com/Precise-Goals/Spectrav2)
 
-### Importance of Rise In Community
-The **Rise In community** has been pivotal to the development of Spectra. By fostering an environment of collaboration, sharing resources, and providing continuous feedback, the community has empowered our team to overcome technical hurdles and accelerate our Web3 integration. We are deeply grateful for their support.
-
-### Stellar XML Integration
-To ensure robust data interchange and wide-ranging interoperability, Spectra incorporates **Stellar XML** standards. This allows our infrastructure to seamlessly communicate with various external services and maintain a high standard of data compliance.
-
----
-
-## 🔗 References
-
-| Resource | Link |
-|----------|------|
-| UGF Documentation | [universalgasframework.com/docs](https://universalgasframework.com/docs) |
-| Testnet Quickstart | [universalgasframework.com/docs/testnet](https://universalgasframework.com/docs/testnet) |
-| TYI Faucet | [universalgasframework.com/faucets](https://universalgasframework.com/faucets) |
-| UGF Testnet JS SDK | [@tychilabs/ugf-testnet-js](https://www.npmjs.com/package/@tychilabs/ugf-testnet-js) |
-| UGF React SDK | [@tychilabs/react-ugf](https://www.npmjs.com/package/@tychilabs/react-ugf) |
-| Sarvam AI | [sarvam.ai](https://sarvam.ai) |
-| Base Sepolia Explorer | [sepolia.basescan.org](https://sepolia.basescan.org) |
-
----
-
-*Developed for the Universal Gas Framework (UGF) Hackathon. Built with UGF and [Tychi Labs](https://tychilabs.com).*
+</div>
