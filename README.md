@@ -55,17 +55,17 @@ The core thesis: **The wallet is the platform. The agent is the interface. The b
 
 ```mermaid
 graph TD
-    A[User Types Intent in English/Hindi/Any Language] --> B[Sarvam AI 30B LLM]
-    B --> C{Parse Intent}
-    C -->|swap| D[Stellar Path Payment]
-    C -->|bridge| E[Li.Fi Cross-Chain Aggregator]
-    C -->|mint| F[Soroban NFT Contract]
-    D --> G[Horizon Testnet]
-    E --> H[Base / EVM Chains]
+    A["User Types Intent in Any Language"] --> B["Sarvam AI 30B LLM"]
+    B --> C{"Parse Intent"}
+    C -->|swap| D["Stellar Path Payment"]
+    C -->|bridge| E["Li.Fi Cross-Chain Aggregator"]
+    C -->|mint| F["Soroban NFT Contract"]
+    D --> G["Horizon Testnet"]
+    E --> H["Base / EVM Chains"]
     F --> G
-    G --> I[Gasless Fee-Bump Relay]
-    I --> J[Transaction Confirmed]
-    J --> K[Live Explorer Link in Chat]
+    G --> I["Gasless Fee-Bump Relay"]
+    I --> J["Transaction Confirmed"]
+    J --> K["Live Explorer Link in Chat"]
 ```
 
 ---
@@ -298,9 +298,9 @@ sequenceDiagram
     GT->>GT: Render Intent Card
     GT->>GT: Show TradingView Chart (BINANCE:XLMUSDT)
     U->>GT: Click "Confirm Execution"
-    GT->>EXEC: Execute swap(XLM → USDC, 10)
-    EXEC-->>GT: { hash: "abc123..." }
-    GT->>U: ✅ Success + Stellar Expert Link
+    GT->>EXEC: "Execute swap XLM to USDC"
+    EXEC-->>GT: "{ hash: abc123... }"
+    GT->>U: "Success + Stellar Expert Link"
 ```
 
 ### Intent Schema
@@ -468,19 +468,19 @@ graph LR
 
 ```mermaid
 graph TB
-    A[User: Bridge 50 XLM to Base] --> B[GlassTerminal Agent]
-    B --> C[bridgeToEvm function]
-    C --> D[Li.Fi Aggregator API]
-    D --> E{Route Discovery}
-    E --> F[Stellar → Base-Sepolia]
-    F --> G[Wormhole / LayerZero / Stargate]
-    G --> H[EVM Wallet receives asset]
+    A["User: Bridge 50 XLM to Base"] --> B["GlassTerminal Agent"]
+    B --> C["bridgeToEvm function"]
+    C --> D["Li.Fi Aggregator API"]
+    D --> E{"Route Discovery"}
+    E --> F["Stellar to Base-Sepolia"]
+    F --> G["Wormhole / LayerZero / Stargate"]
+    G --> H["EVM Wallet receives asset"]
 
-    subgraph "Registered Chains"
-        R1[Stellar Testnet]
-        R2[Base Sepolia]
-        R3[Arbitrum Sepolia]
-        R4[Optimism Sepolia]
+    subgraph Chains["Registered Chains"]
+        R1["Stellar Testnet"]
+        R2["Base Sepolia"]
+        R3["Arbitrum Sepolia"]
+        R4["Optimism Sepolia"]
     end
 
     D --> R1
@@ -497,37 +497,47 @@ Spectra's UI is built on a **Neobrutalist × Dark Glass** design system — a de
 
 ```mermaid
 graph TD
-    subgraph "App Shell"
-        A[React Router v6]
-        B[AuthContext - Wallet + Profile State]
-        C[ErrorContext - Global Error Boundary]
-        D[RateLimitContext - Agent Usage Tracking]
+    subgraph AppShell["App Shell"]
+        A["React Router v6"]
+        B["AuthContext - Wallet and Profile State"]
+        C["ErrorContext - Global Error Boundary"]
+        D["RateLimitContext - Agent Usage Tracking"]
     end
 
-    subgraph "Pages"
-        P1[/ - Home - 3D Spline Landing]
-        P2[/agent - AI Terminal]
-        P3[/exchange - Swap + Bridge]
-        P4[/mint - Subscription NFT Engine]
-        P5[/profile - On-chain Identity]
-        P6[/journal - Transaction History]
-        P7[/about - Manifesto]
+    subgraph Pages["Pages"]
+        P1["/home - 3D Spline Landing"]
+        P2["/agent - AI Terminal"]
+        P3["/exchange - Swap and Bridge"]
+        P4["/mint - Subscription NFT Engine"]
+        P5["/profile - On-chain Identity"]
+        P6["/journal - Transaction History"]
+        P7["/about - Manifesto"]
     end
 
-    subgraph "Key Components"
-        C1[GlassTerminal - AI Chat + Intent Execution]
-        C2[SwapBox - DEX Interface]
-        C3[MintConsole - SaaS Badge Minting]
-        C4[PricingMatrix - Tier Comparison]
-        C5[CrossChainSelector - Bridge UI]
-        C6[ProfileDashboard - On-chain Profile CRUD]
+    subgraph Components["Key Components"]
+        C1["GlassTerminal - AI Chat and Intent Execution"]
+        C2["SwapBox - DEX Interface"]
+        C3["MintConsole - SaaS Badge Minting"]
+        C4["PricingMatrix - Tier Comparison"]
+        C5["CrossChainSelector - Bridge UI"]
+        C6["ProfileDashboard - On-chain Profile CRUD"]
     end
 
-    A --> B --> C --> D
-    A --> P1 & P2 & P3 & P4 & P5 & P6 & P7
+    A --> B
+    B --> C
+    C --> D
+    A --> P1
+    A --> P2
+    A --> P3
+    A --> P4
+    A --> P5
+    A --> P6
+    A --> P7
     P2 --> C1
-    P3 --> C2 & C5
-    P4 --> C3 & C4
+    P3 --> C2
+    P3 --> C5
+    P4 --> C3
+    P4 --> C4
     P5 --> C6
 ```
 
