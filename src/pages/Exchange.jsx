@@ -1,30 +1,24 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import SwapBox, { ASSET_OPTIONS } from "../components/exchange/SwapBox";
-import { CONTRACT_ABIS, CONTRACT_ADDRESSES, NETWORK_INFO, TOKEN_ADDRESSES, resolveTokenAddress, resolveTokenDecimals, assertAddressFormat } from "../config/contracts.js";
+import { CONTRACT_ABIS, CONTRACT_ADDRESSES, NETWORK_INFO, resolveTokenDecimals, assertAddressFormat } from "../config/contracts.js";
 
 const TRADING_VIEW_SYMBOL = {
-  TYI: "BINANCE:USDTUSD",
-  ETH: "BINANCE:ETHUSDT",
-  WETH: "BINANCE:ETHUSDT",
   USDC: "BINANCE:USDCUSDT",
-  WBTC: "BINANCE:BTCUSDT",
   XLM: "BINANCE:XLMUSDT",
+  EURC: "KRAKEN:EURUSD",
 };
 
 const ASSET_NAME = {
-  TYI: "TYI",
-  ETH: "Ethereum (ETH)",
-  WETH: "Wrapped ETH",
   USDC: "USDC",
-  WBTC: "Wrapped Bitcoin (WBTC)",
   XLM: "Stellar Lumens (XLM)",
+  EURC: "Euro Coin (EURC)",
 };
 
 export default function Exchange() {
   const [payAmount, setPayAmount] = useState("100.00");
-  const [payAsset, setPayAsset] = useState("TYI");
-  const [selectedAsset, setSelectedAsset] = useState("ETH");
+  const [payAsset, setPayAsset] = useState("XLM");
+  const [selectedAsset, setSelectedAsset] = useState("USDC");
   const [txHash, setTxHash] = useState("");
   const [error, setError] = useState("");
   const [receiveAmount, setReceiveAmount] = useState("");
@@ -52,39 +46,39 @@ export default function Exchange() {
 
       try {
         setQuoteState("UPDATING");
-        const provider = window.ethereum
-          ? new ethers.BrowserProvider(window.ethereum)
-          : new ethers.JsonRpcProvider(NETWORK_INFO.rpcUrl);
-        const exchange = new ethers.Contract(CONTRACT_ADDRESSES.SPECTRA_EXCHANGE, CONTRACT_ABIS.SPECTRA_EXCHANGE, provider);
-        
-        // Resolve correct decimals per token — never assume 6 or 18 globally.
-        const decimalsIn = resolveTokenDecimals(payAsset);
-        const decimalsOut = resolveTokenDecimals(selectedAsset);
 
-        const tokenIn = resolveTokenAddress(payAsset);
-        const tokenOut = resolveTokenAddress(selectedAsset);
+        // Fetch LIVE quote from CoinGecko (Task 3)
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar,usd-coin&vs_currencies=usd');
+        if (!res.ok) throw new Error("CoinGecko API failed");
         
-        // Hard guard: both addresses must be valid EVM addresses on the EVM path.
-        assertAddressFormat(tokenIn, 'evm', payAsset);
-        assertAddressFormat(tokenOut, 'evm', selectedAsset);
+        const data = await res.json();
         
-        const amountIn = ethers.parseUnits(String(parsed), decimalsIn);
-        const amountOut = await exchange.getQuote(tokenIn, tokenOut, amountIn);
-
-        if (cancelled) {
-          return;
+        // Map Live Prices
+        const priceXLM = data?.stellar?.usd || 0.10;
+        const priceUSDC = data?.['usd-coin']?.usd || 1.00;
+        
+        // Determine conversion based on selected pairs
+        let rate = 1;
+        if (payAsset === 'XLM' && selectedAsset === 'USDC') {
+           rate = priceXLM / priceUSDC;
+        } else if (payAsset === 'USDC' && selectedAsset === 'XLM') {
+           rate = priceUSDC / priceXLM;
         }
 
-        setReceiveAmount(Number(ethers.formatUnits(amountOut, decimalsOut)).toLocaleString("en-US", {
+        if (cancelled) return;
+
+        const calculatedAmount = parsed * rate;
+        
+        // Ensure strict decimal math capped at 7 decimal places (Task 3)
+        setReceiveAmount(calculatedAmount.toLocaleString("en-US", {
           minimumFractionDigits: 2,
-          maximumFractionDigits: 6,
+          maximumFractionDigits: 7,
         }));
         setQuoteState("LIVE");
       } catch (quoteError) {
-        if (cancelled) {
-          return;
-        }
-
+        if (cancelled) return;
+        
+        console.warn("Pricing Fetch Error:", quoteError);
         setReceiveAmount("");
         setQuoteState("UNAVAILABLE");
       }

@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { motion } from "framer-motion";
@@ -68,7 +67,7 @@ const Navigation = () => {
       <StyledLink to="/about">About</StyledLink>
       <StyledLink to="/agent">Agent</StyledLink>
       <StyledLink to="/exchange">Exchange</StyledLink>
-      <StyledLink to="/mint">NFT Minting</StyledLink>
+      <StyledLink to="/mint">Pricing</StyledLink>
       <StyledLink to="/journal">Journal</StyledLink>
     </NavContainer>
   );

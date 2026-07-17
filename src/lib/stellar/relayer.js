@@ -1,5 +1,3 @@
-import { Keypair, TransactionBuilder } from '@stellar/stellar-sdk';
-import { server, networkPassphrase } from './client';
 
 /**
  * Intercepts a signed user transaction and wraps it in a Fee-Bump Transaction

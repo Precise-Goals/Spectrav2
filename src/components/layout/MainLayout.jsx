@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import FluidNav from './FluidNav';
 import Footer from './Footer';

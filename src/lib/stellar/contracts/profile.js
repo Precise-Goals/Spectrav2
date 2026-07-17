@@ -3,32 +3,34 @@ import { CONTRACTS, invokeContract, readContract } from '../client';
 
 /**
  * Create a new profile on-chain.
- * Contract fn: create_profile(user, name, email, phone, bio, avatar_id)
+ * Contract fn: create_profile(user, name, email, phone, bio, avatar_id, cross_chain_address)
  */
 export async function createProfile(publicKey, formData) {
   const args = [
     new Address(publicKey).toScVal(),
-    nativeToScVal(formData.name  || '',  { type: 'string' }),
-    nativeToScVal(formData.email || '',  { type: 'string' }),
-    nativeToScVal(formData.phone || '',  { type: 'string' }),
-    nativeToScVal(formData.bio   || '',  { type: 'string' }),
-    nativeToScVal(formData.avatarId || 1, { type: 'u32' }),
+    nativeToScVal(formData.name             || '', { type: 'string' }),
+    nativeToScVal(formData.email            || '', { type: 'string' }),
+    nativeToScVal(formData.phone            || '', { type: 'string' }),
+    nativeToScVal(formData.bio              || '', { type: 'string' }),
+    nativeToScVal(formData.avatarId         || 1,  { type: 'u32'    }),
+    nativeToScVal(formData.crossChainAddress|| '', { type: 'string' }),
   ];
   return await invokeContract(CONTRACTS.PROFILE, 'create_profile', args, publicKey);
 }
 
 /**
  * Update an existing profile on-chain.
- * Contract fn: update_profile(user, name, email, phone, bio, avatar_id)
+ * Contract fn: update_profile(user, name, email, phone, bio, avatar_id, cross_chain_address)
  */
 export async function updateProfile(publicKey, formData) {
   const args = [
     new Address(publicKey).toScVal(),
-    nativeToScVal(formData.name  || '',  { type: 'string' }),
-    nativeToScVal(formData.email || '',  { type: 'string' }),
-    nativeToScVal(formData.phone || '',  { type: 'string' }),
-    nativeToScVal(formData.bio   || '',  { type: 'string' }),
-    nativeToScVal(formData.avatarId || 1, { type: 'u32' }),
+    nativeToScVal(formData.name             || '', { type: 'string' }),
+    nativeToScVal(formData.email            || '', { type: 'string' }),
+    nativeToScVal(formData.phone            || '', { type: 'string' }),
+    nativeToScVal(formData.bio              || '', { type: 'string' }),
+    nativeToScVal(formData.avatarId         || 1,  { type: 'u32'    }),
+    nativeToScVal(formData.crossChainAddress|| '', { type: 'string' }),
   ];
   return await invokeContract(CONTRACTS.PROFILE, 'update_profile', args, publicKey);
 }
@@ -49,11 +51,12 @@ export async function getProfile(publicKey) {
     if (!native) return null;
 
     return {
-      name:     native.name     || '',
-      email:    native.email    || '',
-      phone:    native.phone    || '',
-      bio:      native.bio      || '',
-      avatarId: native.avatar_id || 1,
+      name:             native.name              || '',
+      email:            native.email             || '',
+      phone:            native.phone             || '',
+      bio:              native.bio               || '',
+      avatarId:         native.avatar_id         || 1,
+      crossChainAddress:native.cross_chain_address|| '',
     };
   } catch (err) {
     // Profile not found is a normal state (user not yet registered)

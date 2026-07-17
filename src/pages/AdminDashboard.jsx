@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
@@ -117,6 +117,13 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const data = await getAllFeedback();
+      setFeedback(data || []);
+      setLoading(false);
+    };
+
     const token = localStorage.getItem('spectra_admin_token');
     if (token !== 'authenticated') {
       navigate('/');
@@ -124,13 +131,6 @@ export default function AdminDashboard() {
       fetchData();
     }
   }, [navigate]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    const data = await getAllFeedback();
-    setFeedback(data || []);
-    setLoading(false);
-  };
 
   const handleExport = () => {
     const worksheet = XLSX.utils.json_to_sheet(feedback.map(f => ({

@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import styled from 'styled-components';
-import { ArrowRight, Zap, Shield, TrendingUp } from 'lucide-react';
+import { Zap, Shield } from 'lucide-react';
 
 /* ─── YAGNI Ledger ─────────────────────────────────────────────────────────────
 // Ponytail: Skipped heavy masonry layout libraries (like react-grid-layout). 
@@ -216,7 +216,7 @@ export default function Journal() {
         <BentoCard $colSpan={2} $rowSpan={1} style={{ justifyContent: 'center', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(10,10,11,0.8))' }}>
           <LargeStat>Duality.</LargeStat>
           <CardTitle style={{ marginTop: 0 }}>Supported Ecosystems</CardTitle>
-          <CardText>Spectra is a hybrid multichain engine that abstracts network boundaries by routing gasless EVM transactions through UGF while executing parallel Soroban actions using the MetaMask Stellar Snap.</CardText>
+          <CardText>Spectra is a hybrid multichain engine that abstracts network boundaries by executing parallel Soroban actions using Freighter.</CardText>
         </BentoCard>
 
       </BentoGrid>

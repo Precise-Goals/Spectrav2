@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { Check, X } from 'lucide-react';
@@ -162,8 +161,8 @@ const tiers = [
   {
     id: 'alpha',
     name: 'ALPHA',
-    price: 'FREE',
-    cost: 0,
+    price: '100 XLM',
+    cost: 100,
     features: [
       { text: 'Read-only terminal access', enabled: true },
       { text: 'Public data feeds', enabled: true },
@@ -174,8 +173,8 @@ const tiers = [
   {
     id: 'vector',
     name: 'VECTOR',
-    price: '$15 / MO',
-    cost: 15,
+    price: '150 XLM',
+    cost: 150,
     features: [
       { text: 'Standard terminal access', enabled: true },
       { text: 'Private data channels', enabled: true },
@@ -186,8 +185,8 @@ const tiers = [
   {
     id: 'nexus',
     name: 'NEXUS',
-    price: '$49 / MO',
-    cost: 49,
+    price: '300 XLM',
+    cost: 300,
     features: [
       { text: 'Root terminal access', enabled: true },
       { text: 'Unlimited data pipelines', enabled: true },
@@ -252,7 +251,7 @@ export default function PricingMatrix({ selectedTier = 'nexus', onSelectTier }) 
         </StatCell>
         <StatCell>
           <StatLabel>Network Fee</StatLabel>
-          <StatValue>0.002 ETH</StatValue>
+          <StatValue>0.01 XLM</StatValue>
         </StatCell>
         <StatCell>
           <StatLabel>Contract Status</StatLabel>

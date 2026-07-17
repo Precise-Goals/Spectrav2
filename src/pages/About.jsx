@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 /* ─── Styled ─────────────────────────────────────────────────────────────────── */
@@ -328,9 +328,9 @@ export default function About() {
   const pageRef = useScrollReveal();
 
   return (
-    <Page ref={pageRef}>
+    <Page ref={pageRef} className="bg-grid-overlay">
       {/* Hero */}
-      <HeroSection className="bg-grid-overlay">
+      <HeroSection>
         <Grid12>
           <ColSpan8>
             <PageTitle>[ ABOUT SPECTRA ]</PageTitle>
@@ -416,14 +416,14 @@ export default function About() {
               </TwoColGrid>
             </ContentBlock>
 
-            {/* TYI */}
+            {/* USDC */}
             <ContentBlock>
               <BlockHeader>
-                <BlockTitle>TYI Integration</BlockTitle>
+                <BlockTitle>USDC Integration</BlockTitle>
                 <BlockTag>[ SANDBOX ENVIRONMENT ]</BlockTag>
               </BlockHeader>
               <BodyText>
-                Prior to live deployment, all agentic strategies undergo rigorous stress testing utilizing TYI within our proprietary sandbox. This isolates financial risk, allowing users to validate logic, monitor slippage parameters, and assess UGF impact before committing actual capital to the active protocol state.
+                Prior to live deployment, all agentic strategies undergo rigorous stress testing utilizing USDC within our proprietary sandbox. This isolates financial risk, allowing users to validate logic, monitor slippage parameters, and assess UGF impact before committing actual capital to the active protocol state.
               </BodyText>
               <ActionButton>
                 <span>View Sandbox Docs</span>

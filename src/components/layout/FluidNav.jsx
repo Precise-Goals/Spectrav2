@@ -126,7 +126,7 @@ const NAV_LINKS = [
   { to: '/about',    label: 'About' },
   { to: '/agent',    label: 'Agent' },
   { to: '/exchange', label: 'Exchange' },
-  { to: '/mint',     label: 'NFT Minting' },
+  { to: '/mint',     label: 'Pricing' },
   { to: '/journal',  label: 'Journal' },
 ];
 
@@ -134,10 +134,10 @@ export default function FluidNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const { isLoggedIn, walletAddress, login, logout } = useAuth();
+  const { isLoggedIn, disconnectWallet } = useAuth();
 
   const handleLogout = () => {
-    logout();
+    disconnectWallet();
   };
 
   // We will load avatarId from smart contract eventually, but for now we default to 1 if logged in
@@ -169,17 +169,19 @@ export default function FluidNav() {
         </NavLinks>
 
         <NavRight>
-          <ProfileIcon onClick={handleProfileClick}>
-            {isLoggedIn ? (
-              <img src={`/profile/${userData.avatarId}.png`} alt="Profile" onError={(e) => { e.target.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + userData.avatarId; }} />
-            ) : (
-              <User size={18} color="var(--color-secondary)" />
-            )}
-          </ProfileIcon>
           {isLoggedIn ? (
-            <AuthButton $isGhost onClick={handleLogout}>Logout</AuthButton>
+            <>
+              <ProfileIcon onClick={handleProfileClick} title="Go to Profile">
+                <img
+                  src={`/profile/${userData.avatarId}.png`}
+                  alt="Profile"
+                  onError={(e) => { e.target.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + userData.avatarId; }}
+                />
+              </ProfileIcon>
+              <AuthButton onClick={handleLogout}>Sign Out</AuthButton>
+            </>
           ) : (
-            <AuthButton onClick={() => setIsModalOpen(true)}>Login</AuthButton>
+            <AuthButton onClick={() => setIsModalOpen(true)}>Connect</AuthButton>
           )}
         </NavRight>
       </NavInner>

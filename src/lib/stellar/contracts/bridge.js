@@ -1,4 +1,4 @@
-import { Address, nativeToScVal, scValToNative } from '@stellar/stellar-sdk';
+import { Address, nativeToScVal } from '@stellar/stellar-sdk';
 import { CONTRACTS, invokeContract } from '../client';
 
 /**

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component } from "react";
+import { useState, useEffect } from "react";
 import Spline from "@splinetool/react-spline";
 import scene from "/design.splinecode";
 

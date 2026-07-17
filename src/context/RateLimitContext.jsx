@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useCallback } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 
 const RateLimitContext = createContext();

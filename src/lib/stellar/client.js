@@ -1,12 +1,10 @@
-import { rpc, Networks, TransactionBuilder, Contract, Keypair, xdr } from '@stellar/stellar-sdk';
-import { signStellarTransaction } from './snap';
-import { submitRelayedTransaction } from './relayer';
+import { rpc, Networks, TransactionBuilder, Contract, Keypair } from '@stellar/stellar-sdk';
+import { signTransaction as signFreighterTransaction } from '@stellar/freighter-api';
+import { relayGaslessTransaction } from './gaslessExecution';
+const RPC_URL = import.meta.env.VITE_STELLAR_RPC_URL || 'https://stellar-soroban-testnet-public.nodies.app';
+export const networkPassphrase = Networks.TESTNET; // Ponytail: Strictly locked to Testnet environment
 
-const RPC_URL = import.meta.env.VITE_STELLAR_RPC_URL || 'https://soroban-testnet.stellar.org';
-const IS_TESTNET = import.meta.env.VITE_STELLAR_NETWORK !== 'mainnet';
-export const networkPassphrase = IS_TESTNET ? Networks.TESTNET : Networks.PUBLIC;
-
-export const server = new rpc.Server(RPC_URL, { allowHttp: false });
+export const server = new rpc.Server(RPC_URL, { allowHttp: true });
 
 export const CONTRACTS = {
   SAAS:     import.meta.env.VITE_SAAS_CONTRACT_ID,
@@ -46,9 +44,9 @@ export async function invokeContract(contractId, method, args, publicKey) {
   try {
     account = await server.getAccount(publicKey);
   } catch (err) {
-    if (err?.response?.status === 404 && IS_TESTNET) {
+    if (err?.response?.status === 404) {
       console.warn('[Stellar] Account not found. Auto-funding via Friendbot...');
-      await fetch(`https://friendbot.stellar.org/?addr=${publicKey}`);
+      await fetch(`https://horizon-testnet.stellar.org/friendbot?addr=${publicKey}`);
       // Retry fetching account
       account = await server.getAccount(publicKey);
     } else {
@@ -56,10 +54,10 @@ export async function invokeContract(contractId, method, args, publicKey) {
     }
   }
 
-  // 2. Build the transaction
+  // 2. Build the transaction (Hard-locked to TESTNET)
   let tx = new TransactionBuilder(account, {
     fee: '1000',
-    networkPassphrase,
+    networkPassphrase, // Strictly Networks.TESTNET
   })
     .addOperation(operation)
     .setTimeout(30)
@@ -75,11 +73,29 @@ export async function invokeContract(contractId, method, args, publicKey) {
   // 4. Assemble (inject auth + update fee) — new SDK: only 2 args
   const assembledTx = rpc.assembleTransaction(tx, simResponse).build();
 
-  // 5. Sign via MetaMask Stellar Snap
-  const signedXdr = await signStellarTransaction(assembledTx.toXDR(), IS_TESTNET);
+  // 5. Sign via Freighter
+  const xdrStr = assembledTx.toXDR();
+  let signedXdr;
+  
+  // CRITICAL FIX: Freighter requires explicit network properties to prevent Mainnet fallback
+  const response = await signFreighterTransaction(xdrStr, { 
+    network: 'TESTNET',
+    networkPassphrase: networkPassphrase 
+  });
+  
+  if (typeof response === 'string') {
+    signedXdr = response;
+  } else if (response && typeof response === 'object') {
+    if (response.error) {
+      throw new Error(`Freighter Error: ${response.error.message || response.error}`);
+    }
+    signedXdr = response.signedTxXdr;
+  } else {
+    throw new Error('Freighter returned an invalid response.');
+  }
 
   // 6. Submit via relayer (gasless fee-bump transaction)
-  const sendResponse = await submitRelayedTransaction(signedXdr);
+  const sendResponse = await relayGaslessTransaction(signedXdr);
 
   if (sendResponse.status === 'ERROR') {
     throw new Error(`Transaction rejected: ${JSON.stringify(sendResponse.errorResult)}`);

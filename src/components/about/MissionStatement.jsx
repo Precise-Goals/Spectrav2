@@ -1,7 +1,6 @@
-import React from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { CheckCircle, Fingerprint, Shield } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 // --- Styled Components ---
 

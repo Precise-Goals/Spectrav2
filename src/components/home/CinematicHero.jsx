@@ -1,8 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import '../../styles/final.css'
-import { Spline } from 'lucide-react';
 import { HeroDesign } from './HeroDesign';
 /* ─── Styled ─────────────────────────────────────────────────────────────────── */
 
@@ -93,11 +92,11 @@ const HeroCard = styled.div`
 
 const HeroTitle = styled.h1`
   font-family: 'Poppins', sans-serif;
-  font-size: clamp(3rem, 8vw, 7rem);
+  font-size: 70px;
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--color-primary);
+  color: var(--color-primary);  
   text-transform: uppercase;
 `;
 
@@ -514,7 +513,7 @@ export default function CinematicHero() {
   return (
     <Page ref={pageRef}>
       {/* Hero */}
-      <HeroSection className="bg-grid-overlay">
+      <HeroSection>
         <SystemStatus>
           <PulseDot />
           <StatusLabel>System Online</StatusLabel>
@@ -522,7 +521,7 @@ export default function CinematicHero() {
 
         <HeroCard className="reveal-item is-visible">
           <HeroTitle>
-            Autonomous Yield.<br />Zero Gas.
+            Ai Orchestrated.<br />Frictionless Execution.
           </HeroTitle>
           <HeroSubtitle>
             [ SYSTEM_STATUS: READY ] INITIALIZING PROTOCOL FOR ADVANCED ON-CHAIN EXECUTION.
@@ -573,7 +572,7 @@ export default function CinematicHero() {
           <ContentCard>
             <CardTitle>Universal Gas Facility</CardTitle>
             <CardText>
-              Spectra abstracts away the complexities of native gas tokens. The UGF operates as a meta-transaction relayer, allowing users and agents to execute operations across Ethereum, L2s, and alternative L1s using a unified stablecoin balance or sponsored transactions.
+              Spectra abstracts away the complexities of native gas tokens, allowing users and agents to execute operations across Ethereum, L2s, and alternative L1s using a unified stablecoin balance or sponsored transactions.
             </CardText>
             <CheckList>
               {['Abstracted Gas Sponsoring', 'Cross-Chain Execution Routing', 'Meta-Transaction Relayers'].map((item) => (
@@ -597,7 +596,7 @@ export default function CinematicHero() {
               <rect x="310" y="35" width="60" height="30" />
               <text fontFamily="monospace" fontSize="10" x="325" y="55">ETH</text>
               <rect x="310" y="85" width="60" height="30" />
-              <text fontFamily="monospace" fontSize="10" x="325" y="105">TYI</text>
+              <text fontFamily="monospace" fontSize="10" x="320" y="105">USDC</text>
               <rect x="310" y="135" width="60" height="30" />
               <text fontFamily="monospace" fontSize="10" x="325" y="155">OP</text>
             </svg>

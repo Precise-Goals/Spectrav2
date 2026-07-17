@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 import { saveFeedback } from '../../lib/stellar/contracts/feedback';
 
@@ -218,7 +218,7 @@ export default function FeedbackSection() {
   if (submitted) {
     return (
       <Section id="feedback">
-        <Container style={{ textAlign: 'center', padding: '64px 24px' }} className="bg-grid-overlay">
+        <Container style={{ textAlign: 'center', padding: '64px 24px' }}>
           <Title>[ FEEDBACK RECEIVED ]</Title>
           <Subtitle style={{ marginBottom: 0 }}>Thank you for helping us shape the future of Spectra.</Subtitle>
         </Container>

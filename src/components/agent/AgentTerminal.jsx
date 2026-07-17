@@ -1,27 +1,23 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { ethers } from 'ethers';
-import { useUGF } from '../../hooks/useUGF';
+import { useMemo, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { tryParseDefiIntent } from '../../api/sarvamAgent.js';
-import { CONTRACT_ABIS, CONTRACT_ADDRESSES, TOKEN_ADDRESSES, resolveTokenAddress, ensureBaseSepolia } from '../../config/contracts.js';
-
-const ERC20_ABI = [
-  'function allowance(address owner, address spender) view returns (uint256)',
-  'function approve(address spender, uint256 amount) returns (bool)',
-];
+import { resolveSacAddress } from '../../config/contracts.js';
+import { swapTokens } from '../../lib/stellar/contracts/exchange';
+import { bridgeToEvm } from '../../lib/stellar/contracts/bridge';
 
 const SUGGESTION_PILLS = [
-  "Swap 10 TYI to ETH",
-  "Bridge 5 USDC to Optimism",
+  "Swap 10 XLM to USDC",
+  "Bridge 5 XLM to Base",
   "Mint Genesis Badge",
-  "Transfer 100 USDC to 0x123..."
+  "Swap 5 XLM for TYI"
 ];
 
 function buildIntentJson(intent) {
   return {
-    intent_id: `0x${ethers.id(`${intent.action}:${intent.amount}:${intent.token}:${Date.now()}`).slice(2, 10)}...${Date.now().toString(16).slice(-4)}`,
+    intent_id: `0x${Math.random().toString(16).slice(2, 10)}...${Date.now().toString(16).slice(-4)}`,
     trigger: {
       type: 'USER_SIGNATURE',
-      network: 'base_sepolia',
+      network: 'stellar_testnet',
       condition: 'immediate',
     },
     execution_graph: [
@@ -30,10 +26,10 @@ function buildIntentJson(intent) {
         action: intent.action.toUpperCase(),
         amount: intent.amount,
         asset: intent.token,
-        venue: 'SPECTRA_EXCHANGE',
+        venue: intent.action.toLowerCase() === 'bridge' ? 'AXELAR_GMP' : 'SPECTRA_EXCHANGE',
       },
     ],
-    estimated_fees: '~$0.00 (via UGF)',
+    estimated_fees: '~$0.00 (via Soroban)',
   };
 }
 
@@ -42,14 +38,13 @@ export default function AgentTerminal() {
   const [isLoading, setIsLoading] = useState(false);
   const [isExecutingState, setIsExecutingState] = useState(false);
   const [intent, setIntent] = useState(null);
-  const [walletAddress, setWalletAddress] = useState('');
   const [status, setStatus] = useState('READY');
   const [error, setError] = useState('');
   const [executionError, setExecutionError] = useState('');
   const [txHash, setTxHash] = useState('');
   const [history, setHistory] = useState([]);
-
-  const { execute, loading: sdkLoading, error: sdkError, step: sdkStep } = useUGF();
+  
+  const { connectWallet, stellarPublicKey } = useAuth();
 
   const intentJson = useMemo(() => {
     if (!intent || intent.error) {
@@ -57,21 +52,6 @@ export default function AgentTerminal() {
     }
     return buildIntentJson(intent);
   }, [intent]);
-
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      throw new Error('No injected wallet found. Install MetaMask or a compatible wallet.');
-    }
-
-    await ensureBaseSepolia();
-
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-    if (!accounts?.length) {
-      throw new Error('Wallet returned no accounts.');
-    }
-    setWalletAddress(accounts[0]);
-    return accounts[0];
-  };
 
   const handleSubmit = async (event, customPrompt) => {
     if (event) event.preventDefault();
@@ -109,7 +89,7 @@ export default function AgentTerminal() {
   };
 
   const handleSignAndExecute = async () => {
-    if (!intent || intent.error || isExecutingState || sdkLoading) {
+    if (!intent || intent.error || isExecutingState) {
       return;
     }
 
@@ -120,61 +100,43 @@ export default function AgentTerminal() {
     setStatus('CONNECTING_WALLET');
 
     try {
-      await connectWallet();
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
+      let currentAccount = stellarPublicKey;
+      if (!currentAccount) {
+        currentAccount = await connectWallet('stellar');
+      }
 
-      /**
-       * TASK 1: Strict Payload Encoding
-       * Order: tokenIn, tokenOut, amountIn, minAmountOut
-       */
-      const tokenIn = TOKEN_ADDRESSES.TYI;
-      const tokenOut = resolveTokenAddress(intent.token);
-      const amountIn = ethers.parseUnits(String(intent.amount || '0'), 6);
-      const minAmountOut = 0n;
+      const tokenIn = resolveSacAddress('XLM'); 
+      const tokenOut = resolveSacAddress(intent.token);
+      const amountInParsed = Math.floor(Number(intent.amount || '0') * 10000000).toString(); // 7 decimals for Stellar
 
-      const iface = new ethers.Interface(CONTRACT_ABIS.SPECTRA_EXCHANGE);
-      const encodedData = iface.encodeFunctionData('swap', [
-        tokenIn,
-        tokenOut,
-        amountIn,
-        minAmountOut,
-      ]);
+      let result;
+      if (intent.action.toLowerCase() === 'bridge') {
+        result = await bridgeToEvm(
+          currentAccount,
+          tokenIn,
+          amountInParsed,
+          'base-sepolia',
+          '0x0000000000000000000000000000000000000000' // mock destination
+        );
+      } else {
+        result = await swapTokens(
+          currentAccount,
+          tokenIn,
+          tokenOut,
+          amountInParsed,
+          '0'
+        );
+      }
 
-      console.log('[AgentTerminal] Encoding Payload:', {
-        target: CONTRACT_ADDRESSES.SPECTRA_EXCHANGE,
-        data: encodedData,
-        paymentToken: TOKEN_ADDRESSES.TYI
-      });
-
-      /**
-       * TASK 1 & 2: Pure UGF SDK Execution
-       * The hook handles forwarder approval and gasless execution lifecycle.
-       */
-      const result = await execute({
-        target: CONTRACT_ADDRESSES.SPECTRA_EXCHANGE,
-        data: encodedData,
-        paymentToken: TOKEN_ADDRESSES.TYI,
-        signer
-      });
-
-      if (result && result.userTxHash) {
-        setTxHash(result.userTxHash);
+      if (result && result.hash) {
+        setTxHash(result.hash);
         setStatus('EXECUTED');
       }
 
     } catch (execError) {
       console.error('[AgentTerminal] Pipeline Error:', execError);
       
-      /**
-       * TASK 2: Advanced Error Parsing UI
-       */
       let message = execError.message || 'Intent Execution Failed';
-      
-      if (message.includes('500') || message.includes('Internal Server Error')) {
-        message = 'Relayer Error: The UGF network rejected the transaction payload. Verify that the exchange has liquidity and the token addresses are correct.';
-      }
-
       setExecutionError(message);
       setStatus('ERROR');
     } finally {
@@ -183,17 +145,12 @@ export default function AgentTerminal() {
   };
 
   const renderStatusIndicator = () => {
-    if (sdkLoading || status === 'CONNECTING_WALLET') {
+    if (status === 'CONNECTING_WALLET') {
       return (
         <div className="spectra-agent-loader-row">
           <div className="spectra-agent-geometric-spinner" />
           <span className="spectra-agent-loader-text">
-            {status === 'CONNECTING_WALLET' && 'Connecting Agent Wallet...'}
-            {sdkStep === 'AUTHENTICATING' && 'Authenticating Intent...'}
-            {sdkStep === 'CHECKING_ALLOWANCE' && 'Verifying Permissions...'}
-            {sdkStep === 'APPROVING_FORWARDER' && 'Approving UGF Relayer...'}
-            {sdkStep === 'SUBMITTING_PAYMENT' && 'Sponsoring Gas...'}
-            {sdkStep === 'EXECUTING_ON_CHAIN' && 'Finalizing Intent Execution...'}
+            Connecting Agent Wallet...
           </span>
         </div>
       );
@@ -261,7 +218,6 @@ export default function AgentTerminal() {
                 <span className="spectra-agent-label">SYSTEM_AGENT</span>
                 <div className="spectra-agent-bubble">
                   
-                  {/* Handle AI-generated error (vague input) */}
                   {intent?.error ? (
                     <div className="spectra-agent-system-lines">
                       <p className="spectra-agent-line" style={{ color: 'var(--color-primary)', fontWeight: 'bold' }}>
@@ -281,7 +237,6 @@ export default function AgentTerminal() {
 
                       {renderStatusIndicator()}
 
-                      {/* Task 3: Red Alert Box for execution errors */}
                       {executionError && (
                         <div className="spectra-error-alert" style={{
                           background: 'rgba(255, 0, 0, 0.1)',
@@ -311,17 +266,17 @@ export default function AgentTerminal() {
                           type="button"
                           className="spectra-agent-cta"
                           onClick={handleSignAndExecute}
-                          disabled={!intent || isExecutingState || sdkLoading}
+                          disabled={!intent || isExecutingState}
                         >
                           <span className="material-symbols-outlined spectra-agent-cta-icon">signature</span>
-                          <span className="spectra-agent-cta-text">{isExecutingState || sdkLoading ? 'PIPELINE_ACTIVE...' : 'Sign & Execute (UGF Gasless)'}</span>
+                          <span className="spectra-agent-cta-text">{isExecutingState ? 'PIPELINE_ACTIVE...' : 'Sign & Execute (Stellar Gasless)'}</span>
                         </button>
                       )}
                     </>
                   )}
 
-                  {walletAddress && (
-                    <p className="spectra-agent-line spectra-agent-wallet">Connected: {walletAddress}</p>
+                  {stellarPublicKey && (
+                    <p className="spectra-agent-line spectra-agent-wallet">Connected: {stellarPublicKey}</p>
                   )}
                   {txHash && (
                     <p className="spectra-agent-line spectra-agent-wallet">Tx Hash: {txHash}</p>
@@ -343,9 +298,9 @@ export default function AgentTerminal() {
                 type="text"
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
-                disabled={isLoading || isExecutingState || sdkLoading}
+                disabled={isLoading || isExecutingState}
               />
-              <button className="spectra-agent-submit" type="submit" disabled={isLoading || isExecutingState || sdkLoading || !prompt.trim()}>
+              <button className="spectra-agent-submit" type="submit" disabled={isLoading || isExecutingState || !prompt.trim()}>
                 {isLoading ? '[ PARSING ]' : '[ SUBMIT ]'}
               </button>
             </form>

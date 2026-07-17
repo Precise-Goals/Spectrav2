@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useState,useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Wallet, Hexagon } from "lucide-react";
+import { isConnected } from '@stellar/freighter-api';
 
 const LoginContainer = styled.div`
   min-height: 100vh;
@@ -81,10 +82,37 @@ const ErrorText = styled.div`
 `;
 
 export default function Login() {
-  const { connectWallet, connectStellar, isLoggedIn, profile, isLoadingProfile, isInitialized } = useAuth();
+  const { connectWallet, isLoggedIn, profile, isLoadingProfile, isInitialized } = useAuth();
   const [error, setError] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [hasFreighter, setHasFreighter] = useState(false);
   const navigate = useNavigate();
+
+  // Detect Freighter on mount
+  useEffect(() => {
+    let mounted = true;
+    const checkFreighter = async () => {
+      try {
+        if (window.freighterApi || window.freighter) {
+          if (mounted) setHasFreighter(true);
+          return;
+        }
+        const { isConnected: freighterDetected } = await isConnected();
+        if (mounted && freighterDetected) {
+          setHasFreighter(true);
+        }
+      } catch (e) {
+        console.warn('Freighter detection failed', e);
+      }
+    };
+    checkFreighter();
+    // Also re-check after a brief delay for slow injections
+    const timer = setTimeout(checkFreighter, 500);
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
+  }, []);
 
   if (!isInitialized) {
     return (
@@ -111,22 +139,11 @@ export default function Login() {
     return <Navigate to="/" replace />;
   }
 
-  const handleEvmConnect = async () => {
-    setError('');
-    setIsConnecting(true);
-    try {
-      await connectWallet();
-    } catch (err) {
-      setError(err.message || 'Failed to connect EVM wallet');
-      setIsConnecting(false);
-    }
-  };
-
   const handleStellarConnect = async () => {
     setError('');
     setIsConnecting(true);
     try {
-      await connectStellar();
+      await connectWallet('stellar');
     } catch (err) {
       setError(err.message || 'Failed to connect Stellar wallet');
       setIsConnecting(false);
@@ -141,15 +158,23 @@ export default function Login() {
              Get Started with your First Swapping Transaction, authenticate now.
             </p>
             
-        <ConnectBtn onClick={handleEvmConnect} disabled={isConnecting}>
-          <Wallet size={18} />
-          {isConnecting ? 'CONNECTING...' : 'Connect EVM (Base Sepolia)'}
-        </ConnectBtn>
-
-        <ConnectBtn onClick={handleStellarConnect} disabled={isConnecting}>
-          <Hexagon size={18} />
-          {isConnecting ? 'CONNECTING...' : 'Connect Stellar (Soroban Snap)'}
-        </ConnectBtn>
+        {hasFreighter ? (
+          <ConnectBtn onClick={handleStellarConnect} disabled={isConnecting}>
+            <Hexagon size={18} />
+            {isConnecting ? 'CONNECTING...' : 'Connect Freighter'}
+          </ConnectBtn>
+        ) : (
+          <ConnectBtn 
+            as="a" 
+            href="https://chromewebstore.google.com/detail/freighter/bcacfldlkkdogcmkkibnjlakofdplcbk"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'none' }}
+          >
+            <Hexagon size={18} />
+            Install Freighter
+          </ConnectBtn>
+        )}
         
         {error && <ErrorText>{error}</ErrorText>}
       </LoginBox>

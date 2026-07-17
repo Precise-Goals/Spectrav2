@@ -394,6 +394,11 @@
   font-family: "Geist", monospace;
   font-size: 12px;
   padding: 10px 12px;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 99999 !important;
 }
 
 .spectra-error-box {

@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 
 const Page = styled.div`
@@ -139,8 +138,8 @@ const ListItem = styled.li`
 
 export default function PrivacyPolicy() {
   return (
-    <Page>
-      <HeroSection className="bg-grid-overlay">
+    <Page className="bg-grid-overlay">
+      <HeroSection>
         <Grid12>
           <ColSpan8>
             <PageTitle>[ PRIVACY POLICY ]</PageTitle>
