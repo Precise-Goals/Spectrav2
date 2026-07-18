@@ -371,19 +371,32 @@ export async function askGeneralAgent(userPrompt, options = {}) {
         messages: [
           { 
             role: "system", 
-            content: "You are Spectra, an advanced AI Assistant for a Web3 Decentralized Exchange. Answer the user's questions about blockchain, Web3, and Spectra concisely and helpfully. Do not use markdown. Speak in the same language the user uses." 
+            content: "You are Spectra, an advanced AI Assistant for a Web3 Decentralized Exchange. You must ONLY answer questions related to Web3, blockchain, crypto, or Spectra. If the user asks about ANYTHING else, politely refuse to answer and remind them you are a Web3 assistant. EXTREMELY IMPORTANT: Keep your response strictly under 300 characters. Be highly concise and conversational. Do not use markdown. Speak in the same language the user uses." 
           },
           { role: "user", content: userPrompt },
         ],
         temperature: 0.3,
-        max_tokens: 512,
+        max_tokens: 2048,
       }),
     });
-    if (!response.ok) return null;
+    
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("[SarvamAgent] askGeneralAgent HTTP Error:", response.status, errText);
+      return null;
+    }
+    
     const data = await response.json();
-    return data?.choices?.[0]?.message?.content || null;
+    const content = data?.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      console.error("[SarvamAgent] askGeneralAgent missing content in response:", data);
+      return null;
+    }
+    
+    return content;
   } catch (err) {
-    console.error("[SarvamAgent] askGeneralAgent error:", err);
+    console.error("[SarvamAgent] askGeneralAgent catch error:", err);
     return null;
   } finally {
     clearTimeout(timeoutId);

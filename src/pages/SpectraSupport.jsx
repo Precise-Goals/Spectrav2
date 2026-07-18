@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import Spline from "@splinetool/react-spline";
 import styled from "styled-components";
-import { tryParseDefiIntent, askGeneralAgent } from "../api/sarvamAgent.js";
+import { askGeneralAgent } from "../api/sarvamAgent.js";
 import { HeroDesign } from "../components/home/HeroDesign.jsx";
+import { MdMic, MdMicOff } from "react-icons/md";
 
 const Container = styled.div`
   width: 100vw;
@@ -26,20 +27,20 @@ const UIOverlay = styled.div`
 const MicButton = styled.button`
   pointer-events: auto;
   background: ${(props) =>
-    props.isListening ? "#ef4444" : "var(--color-primary)"};
+    props.$isListening ? "#ef4444" : "var(--color-primary)"};
   color: blue;
   border: none;
   border-radius: 50px;
   padding: 1%;
   font-size: 2rem;
-  font-weight: 600;
+  font-weight: 900;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 12px;
   transition: all 0.3s ease;
   box-shadow: ${(props) =>
-    props.isListening
+    props.$isListening
       ? "0 0 30px rgba(239, 68, 68, 0.6)"
       : "0 0 30px rgba(var(--color-primary-rgb), 0.6)"};
 `;
@@ -49,27 +50,63 @@ export default function SpectraSupport() {
   const [isProcessing, setIsProcessing] = useState(false);
   const recognitionRef = useRef(null);
 
-  const speak = (text) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    const voices = window.speechSynthesis.getVoices();
-    let selectedVoice = voices.find((v) => v.lang.includes("en"));
-    const indianVoice = voices.find(
-      (v) => v.name.toLowerCase().includes("shubh") || v.lang.includes("IN"),
-    );
-    if (indianVoice) selectedVoice = indianVoice;
+  const speak = async (text) => {
+    try {
+      const apiKey = import.meta.env.VITE_SARVAM_API_KEY;
+      if (!apiKey) throw new Error("No API key");
+      
+      // Ponytail: Sarvam TTS limits inputs to 500 characters max and max 3 array items.
+      // We enforce brevity at the LLM level, and safety-slice it here to guarantee the API never crashes.
+      const safeText = text.length > 499 ? text.slice(0, 499) : text;
+      
+      const res = await fetch("https://api.sarvam.ai/text-to-speech", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "api-subscription-key": apiKey },
+        body: JSON.stringify({
+          inputs: [safeText],
+          target_language_code: "en-IN",
+          speaker: "shubh",
+          pace: 1.0,
+          speech_sample_rate: 16000,
+          enable_preprocessing: true,
+          model: "bulbul:v3"
+        })
+      });
+      
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Sarvam TTS HTTP Error:", res.status, errText);
+        throw new Error("Sarvam TTS API Failed");
+      }
+      
+      const data = await res.json();
+      const base64Audio = data.audios[0];
+      const audio = new Audio("data:audio/wav;base64," + base64Audio);
+      audio.play();
+    } catch (err) {
+      console.warn("// Ponytail: Sarvam TTS failed (key/network). Falling back to native.", err);
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis.getVoices();
+      let selectedVoice = voices.find((v) => v.lang.includes("en"));
+      const indianVoice = voices.find(
+        (v) => v.name.toLowerCase().includes("shubh") || v.lang.includes("IN"),
+      );
+      if (indianVoice) selectedVoice = indianVoice;
 
-    if (selectedVoice) utterance.voice = selectedVoice;
-    window.speechSynthesis.speak(utterance);
+      if (selectedVoice) utterance.voice = selectedVoice;
+      window.speechSynthesis.speak(utterance);
+    }
   };
 
   useEffect(() => {
-    const greet = () => speak("Welcome to Spectra, How may I assist you?");
-    if (window.speechSynthesis.getVoices().length === 0) {
-      window.speechSynthesis.onvoiceschanged = greet;
-    } else {
-      greet();
-    }
+    // Play free will audio
+    const greetingAudio = new Audio("/speech.mp3");
+    greetingAudio.play().catch(e => console.warn("Browser autoplay blocked free-will audio:", e));
+    
+    // Ponytail: Skipped Sarvam STT (Speech-to-Text) due to browser MediaRecorder 
+    // lacking native WAV/MP3 encoding without heavy polyfills. Retained native 
+    // SpeechRecognition for zero-latency, cross-browser compatibility.
 
     // Initialize Speech Recognition
     const SpeechRecognition =
@@ -82,6 +119,7 @@ export default function SpectraSupport() {
 
       recognitionRef.current.onresult = async (event) => {
         const currentTranscript = event.results[0][0].transcript;
+        console.log("[Spectra STT] User heard:", currentTranscript);
         setIsListening(false);
         await processInput(currentTranscript);
       };
@@ -115,30 +153,15 @@ export default function SpectraSupport() {
 
   const processInput = async (text) => {
     setIsProcessing(true);
+    console.log("[Spectra Agent] Processing input:", text);
 
     try {
-      const result = await tryParseDefiIntent(text);
-      let responseText = "";
-
-      if (result && !result.error) {
-        const { action, amount, token } = result;
-        if (action?.toLowerCase() === "bridge") {
-          responseText = `I can help you bridge ${amount} ${token}. Head over to the Agent OS terminal to sign the transaction.`;
-        } else {
-          responseText = `I am ready to help you ${action} ${amount || "some"} ${token}. You can execute this in the Agent OS terminal.`;
-        }
-      } else {
-        const generalResponse = await askGeneralAgent(text);
-        if (generalResponse) {
-          responseText = generalResponse;
-        } else {
-          responseText =
-            result?.error || "I'm sorry, I couldn't understand that request.";
-        }
-      }
-
+      const generalResponse = await askGeneralAgent(text);
+      const responseText = generalResponse || "I'm sorry, I couldn't understand that request.";
+      console.log("[Spectra Agent] AI Response:", responseText);
       speak(responseText);
     } catch (err) {
+      console.error("[Spectra Agent] Processing error:", err);
       speak("Sorry, I encountered an issue while processing your request.");
     } finally {
       setIsProcessing(false);
@@ -154,13 +177,11 @@ export default function SpectraSupport() {
         <UIOverlay>
           <MicButton
             onClick={toggleListen}
-            isListening={isListening}
+            $isListening={isListening}
             disabled={isProcessing}
           >
-            <span className="material-symbols-outlined">
-              {isListening ? "mic_off" : "mic"}
-            </span>
-            {isListening ? "STOP LISTENING" : isProcessing ? "THINKING..." : ""}
+            {isListening ? <MdMicOff size={48} /> : <MdMic size={48} />}
+            {isListening ? "" : isProcessing ? "..." : ""}
           </MicButton>
         </UIOverlay>
       </Container>
