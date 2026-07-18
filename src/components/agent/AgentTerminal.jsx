@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { tryParseDefiIntent } from '../../api/sarvamAgent.js';
 import { resolveSacAddress } from '../../config/contracts.js';
@@ -43,8 +43,41 @@ export default function AgentTerminal() {
   const [executionError, setExecutionError] = useState('');
   const [txHash, setTxHash] = useState('');
   const [history, setHistory] = useState([]);
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [voiceLanguage, setVoiceLanguage] = useState('en-US');
   
   const { connectWallet, stellarPublicKey } = useAuth();
+
+  const getDetailedResponse = (intentObj) => {
+    if (!intentObj) return "";
+    if (intentObj.error) return `I need clarification: ${intentObj.error}`;
+    const { action, amount, token } = intentObj;
+    if (action?.toLowerCase() === 'bridge') {
+      return `I have prepared the transaction to bridge ${amount} ${token} to Base network. Please click sign and execute to proceed.`;
+    }
+    return `I am ready to swap ${amount || 'some'} XLM for ${token}. Please sign the transaction below to execute it on the Stellar network.`;
+  };
+
+  const detailedText = useMemo(() => getDetailedResponse(intent), [intent]);
+
+  useEffect(() => {
+    if (detailedText && voiceEnabled && !isLoading && status === 'READY') {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(detailedText);
+      utterance.lang = voiceLanguage;
+      
+      const voices = window.speechSynthesis.getVoices();
+      let selectedVoice = voices.find(v => v.lang.includes(voiceLanguage));
+      
+      if (voiceLanguage === 'hi-IN' || voiceLanguage === 'en-IN') {
+        const indianVoice = voices.find(v => v.name.toLowerCase().includes('shubh') || v.lang.includes('IN'));
+        if (indianVoice) selectedVoice = indianVoice;
+      }
+      if (selectedVoice) utterance.voice = selectedVoice;
+      
+      window.speechSynthesis.speak(utterance);
+    }
+  }, [detailedText, voiceEnabled, voiceLanguage, isLoading, status]);
 
   const intentJson = useMemo(() => {
     if (!intent || intent.error) {
@@ -161,10 +194,38 @@ export default function AgentTerminal() {
 
   return (
     <div className="spectra-agent-page">
-      <div className="spectra-agent-terminal-header" style={{ marginBottom: '16px' }}>
+      <div className="spectra-agent-terminal-header" style={{ marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div className="spectra-agent-header-left">
           <span className="material-symbols-outlined spectra-agent-header-icon">terminal</span>
           <span className="spectra-agent-header-title">AGENTIC_WALLET_OS // ACTIVE_MODE</span>
+        </div>
+        <div className="spectra-agent-header-right" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <select 
+            value={voiceLanguage} 
+            onChange={(e) => setVoiceLanguage(e.target.value)}
+            style={{ background: 'black', color: 'white', border: '1px solid #333', padding: '4px 8px', borderRadius: '4px', fontFamily: 'Geist Mono' }}
+          >
+            <option value="en-US">English (US)</option>
+            <option value="en-IN">English (India)</option>
+            <option value="hi-IN">Hindi (India)</option>
+            <option value="es-ES">Spanish</option>
+          </select>
+          <button 
+            onClick={() => {
+               setVoiceEnabled(!voiceEnabled);
+               window.speechSynthesis.cancel();
+            }}
+            style={{ 
+              background: voiceEnabled ? 'var(--color-primary)' : '#222', 
+              color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'Geist Mono', fontSize: '13px'
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+              {voiceEnabled ? 'record_voice_over' : 'voice_over_off'}
+            </span>
+            Shubh Voice {voiceEnabled ? 'ON' : 'OFF'}
+          </button>
         </div>
       </div>
       
@@ -255,6 +316,19 @@ export default function AgentTerminal() {
                       )}
 
                       {intent && !intent.error && (
+                        <div style={{ margin: '16px 0', fontSize: '1.05rem', color: '#e2e8f0', fontFamily: 'Inter, sans-serif' }}>
+                          {voiceEnabled ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)' }}>
+                              <span className="material-symbols-outlined">graphic_eq</span>
+                              <span>[ Playing Voice Response... ]</span>
+                            </div>
+                          ) : (
+                            <p style={{ lineHeight: '1.5' }}>&gt; {detailedText}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {intent && !intent.error && !voiceEnabled && (
                         <div className="spectra-agent-json">
                           <pre className="spectra-agent-pre">
                             {JSON.stringify(intentJson, null, 2)}

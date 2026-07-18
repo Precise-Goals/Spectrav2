@@ -346,3 +346,46 @@ export async function tryParseDefiIntent(userPrompt, options = {}) {
     return null;
   }
 }
+
+/**
+ * Handles general Web3 and blockchain queries using Sarvam AI.
+ * Returns a plain text conversational response instead of a structured intent.
+ */
+export async function askGeneralAgent(userPrompt, options = {}) {
+  if (!userPrompt || typeof userPrompt !== "string") return "I didn't catch that.";
+  
+  const apiKey = resolveApiKey(options.apiKey);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  
+  try {
+    const response = await fetch(SARVAM_CHAT_ENDPOINT, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "api-subscription-key": apiKey,
+      },
+      body: JSON.stringify({
+        model: SARVAM_MODEL,
+        messages: [
+          { 
+            role: "system", 
+            content: "You are Spectra, an advanced AI Assistant for a Web3 Decentralized Exchange. Answer the user's questions about blockchain, Web3, and Spectra concisely and helpfully. Do not use markdown. Speak in the same language the user uses." 
+          },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 512,
+      }),
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data?.choices?.[0]?.message?.content || null;
+  } catch (err) {
+    console.error("[SarvamAgent] askGeneralAgent error:", err);
+    return null;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}

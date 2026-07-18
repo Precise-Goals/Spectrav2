@@ -1,23 +1,23 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User } from 'lucide-react';
+import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import WalletSelectorModal from '../auth/WalletSelectorModal';
 
 /* ─── Styled Components ──────────────────────────────────────────────────────── */
 
 const NavWrap = styled.nav`
   position: fixed;
-  top: 24px;
+  top: 3.25%;
   left: 50%;
   transform: translateX(-50%);
-  padding: 12px 24px;
+  padding: 1.2% 2%;
   background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  max-width: 960px;
+  width: 65%;
   margin: 0 auto;
   z-index: 50;
 
@@ -128,13 +128,45 @@ const NAV_LINKS = [
   { to: '/exchange', label: 'Exchange' },
   { to: '/mint',     label: 'Pricing' },
   { to: '/journal',  label: 'Journal' },
+  { to: '/spectra',  label: 'Spectra AI' },
 ];
 
 export default function FluidNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoggedIn, disconnectWallet } = useAuth();
+
+  const [isMuted, setIsMuted] = useState(true);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.play().then(() => {
+        setIsMuted(false);
+        audioRef.current.muted = false;
+      }).catch(e => {
+        console.warn("Autoplay blocked by browser:", e);
+        setIsMuted(true);
+        audioRef.current.muted = true;
+      });
+    }
+  }, []);
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      if (audioRef.current.paused) {
+        audioRef.current.play().catch(console.error);
+        audioRef.current.muted = false;
+        setIsMuted(false);
+      } else {
+        const nextMuted = !audioRef.current.muted;
+        audioRef.current.muted = nextMuted;
+        setIsMuted(nextMuted);
+      }
+    }
+  };
 
   const handleLogout = () => {
     disconnectWallet();
@@ -169,6 +201,23 @@ export default function FluidNav() {
         </NavLinks>
 
         <NavRight>
+          <audio ref={audioRef} src="/aud.mp3" loop />
+          <button 
+            onClick={toggleMute} 
+            title={isMuted ? "Play Music" : "Mute Music"}
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              color: isMuted ? 'var(--color-secondary)' : 'var(--color-primary)', 
+              cursor: 'pointer', 
+              display: 'flex', 
+              alignItems: 'center',
+              padding: '4px'
+            }}
+          >
+            {isMuted ? <FaVolumeMute size={18} /> : <FaVolumeUp size={18} />}
+          </button>
+          
           {isLoggedIn ? (
             <>
               <ProfileIcon onClick={handleProfileClick} title="Go to Profile">

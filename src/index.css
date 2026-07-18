@@ -178,7 +178,7 @@ button, a { transition-property: background-color, color, border-color, opacity,
   top: 0;
   left: 0;
   height: 3px;
-  background: linear-gradient(90deg, #b026ff, #00f2fe);
+  background: linear-gradient(90deg, white, blue);
   z-index: 9999;
   width: 0%;
   animation: scroll-progress auto linear;

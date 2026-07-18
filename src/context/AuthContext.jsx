@@ -5,7 +5,7 @@ import { getProfile } from '../lib/stellar/contracts/profile';
 import { getUserTier as getStellarUserTier } from '../services/tierVerification';
 import { buildMintTransaction, coSignAndSubmitMint, buildBurnTransaction } from '../services/mintAsset';
 import { TransactionBuilder, Horizon, Networks } from '@stellar/stellar-sdk';
-import { isAllowed, setAllowed, getAddress, signTransaction } from '@stellar/freighter-api';
+import { isAllowed, setAllowed, requestAccess, getAddress, signTransaction } from '@stellar/freighter-api';
 
 const AuthContext = createContext();
 
@@ -71,12 +71,21 @@ export function AuthProvider({ children }) {
 
   const connectWallet = useCallback(async (type) => {
     try {
-      if (!(await isAllowed())) {
-        await setAllowed();
-      }
+      const allowedRes = await isAllowed();
+      const allowed = typeof allowedRes === 'object' && allowedRes !== null ? allowedRes.isAllowed : allowedRes;
       
-      const { address: pubKey, error: addrErr } = await getAddress();
-      if (addrErr) throw new Error(addrErr);
+      let pubKey;
+      if (!allowed) {
+        const accessRes = await requestAccess();
+        pubKey = typeof accessRes === 'object' && accessRes !== null ? accessRes.address : accessRes;
+        const err = typeof accessRes === 'object' && accessRes !== null ? accessRes.error : null;
+        if (err) throw new Error(err);
+      } else {
+        const addrRes = await getAddress();
+        pubKey = typeof addrRes === 'object' && addrRes !== null ? addrRes.address : addrRes;
+        const addrErr = typeof addrRes === 'object' && addrRes !== null ? addrRes.error : null;
+        if (addrErr) throw new Error(addrErr);
+      }
 
       if (pubKey) {
         try {

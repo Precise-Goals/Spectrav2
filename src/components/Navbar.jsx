@@ -1,5 +1,6 @@
 // Ponytail: Single dynamic button logic mapped directly to WalletContext. No bloated UI kit.
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
@@ -11,6 +12,37 @@ export default function Navbar() {
     isNewUser, 
     isLoadingProfile 
   } = useAuth();
+
+  const [isMuted, setIsMuted] = useState(true);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.play().then(() => {
+        setIsMuted(false);
+        audioRef.current.muted = false;
+      }).catch(e => {
+        console.warn("Autoplay blocked by browser:", e);
+        setIsMuted(true);
+        audioRef.current.muted = true;
+      });
+    }
+  }, []);
+
+  const toggleMute = () => {
+    if (audioRef.current) {
+      if (audioRef.current.paused) {
+        audioRef.current.play().catch(console.error);
+        audioRef.current.muted = false;
+        setIsMuted(false);
+      } else {
+        const nextMuted = !audioRef.current.muted;
+        audioRef.current.muted = nextMuted;
+        setIsMuted(nextMuted);
+      }
+    }
+  };
 
   const handleConnect = async () => {
     if (!window.freighterApi) {
@@ -121,7 +153,15 @@ export default function Navbar() {
         <span className="text-white font-bold text-xl tracking-tight hidden sm:block">Spectra Orchestrator</span>
       </div>
       
-      <div className="flex items-center">
+      <div className="flex items-center gap-4">
+        <audio ref={audioRef} src="/aud.mp3" loop autoPlay />
+        <button 
+          onClick={toggleMute} 
+          className="text-gray-300 hover:text-white transition-colors p-2"
+          title={isMuted ? "Play Music" : "Mute Music"}
+        >
+          {isMuted ? <FaVolumeMute size={20} /> : <FaVolumeUp size={20} />}
+        </button>
         {renderActionButton()}
       </div>
     </nav>

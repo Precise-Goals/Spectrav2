@@ -19,7 +19,8 @@ export default function WalletSelectorModal({ isOpen, onClose }) {
           if (mounted) setHasFreighter(true);
           return;
         }
-        const { isConnected: freighterDetected } = await isConnected();
+        const connRes = await isConnected();
+        const freighterDetected = typeof connRes === 'object' && connRes !== null ? connRes.isConnected : connRes;
         if (mounted && freighterDetected) {
           setHasFreighter(true);
         }
