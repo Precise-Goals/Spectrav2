@@ -133,9 +133,9 @@ nav {
   border-radius: 6rem;
 }
 .spectraai {
-    width: 62%;
+    width: 50%;
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 50%;
     transform: translate(-50%, -50%);
     border-radius: 10rem;

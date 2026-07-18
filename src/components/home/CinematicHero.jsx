@@ -563,7 +563,7 @@ export default function CinematicHero() {
       </HeroSection>
         <HeroDesign/>
       {/* Infrastructure */}
-      <Section className="bg-grid">
+      <Section className="">
         <SectionHeader className="reveal-item">
           <SectionTitle>The Infrastructure</SectionTitle>
           <SectionMeta>UGF_ARCHITECTURE</SectionMeta>
