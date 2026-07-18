@@ -25,7 +25,18 @@ export default function Exchange() {
   const [quoteState, setQuoteState] = useState("LIVE");
 
   const tradingSymbol =
-    TRADING_VIEW_SYMBOL[selectedAsset] ?? TRADING_VIEW_SYMBOL.ETH;
+    TRADING_VIEW_SYMBOL[selectedAsset] ?? TRADING_VIEW_SYMBOL.XLM;
+
+  // Auto-flip: if user picks a receive asset that matches the current pay asset, switch pay asset
+  const handleAssetChange = (newReceiveAsset) => {
+    if (newReceiveAsset === payAsset) {
+      // Flip: pick any asset that's not the same
+      const options = ['XLM', 'USDC', 'EURC'];
+      const fallback = options.find(o => o !== newReceiveAsset);
+      setPayAsset(fallback || 'XLM');
+    }
+    setSelectedAsset(newReceiveAsset);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -142,7 +153,7 @@ export default function Exchange() {
             onPayAmountChange={setPayAmount}
             receiveAmount={receiveAmount}
             selectedAsset={selectedAsset}
-            onAssetChange={setSelectedAsset}
+            onAssetChange={handleAssetChange}
             payAsset={payAsset}
             onPayAssetChange={setPayAsset}
             onTxHashChange={setTxHash}

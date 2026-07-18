@@ -535,8 +535,9 @@ export default function GlassTerminal({ onFlowStateChange }) {
     try {
       if (!stellarPublicKey) throw new Error('No active wallet found.');
 
-      const tokenIn = resolveSacAddress('XLM'); 
-      const tokenOut = resolveSacAddress(intent.token);
+      // Pass symbols directly — getClassicAsset resolves by symbol (XLM/USDC/EURC)
+      const tokenIn = 'XLM';
+      const tokenOut = String(intent.token || 'USDC').toUpperCase();
       const amountInParsed = Math.floor(Number(intent.amount || '0') * 10000000).toString(); // 7 decimals usually for Stellar
 
       let result;
@@ -546,7 +547,7 @@ export default function GlassTerminal({ onFlowStateChange }) {
           stellarPublicKey,
           tokenIn,
           amountInParsed,
-          'base-sepolia',
+          'sepolia',
           '0x0000000000000000000000000000000000000000'
         );
       } else {

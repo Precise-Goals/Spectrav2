@@ -105,8 +105,9 @@ export default function AgentTerminal() {
         currentAccount = await connectWallet('stellar');
       }
 
-      const tokenIn = resolveSacAddress('XLM'); 
-      const tokenOut = resolveSacAddress(intent.token);
+      // Pass symbols directly — getClassicAsset resolves by symbol (XLM/USDC/EURC)
+      const tokenIn = 'XLM';
+      const tokenOut = String(intent.token || 'USDC').toUpperCase();
       const amountInParsed = Math.floor(Number(intent.amount || '0') * 10000000).toString(); // 7 decimals for Stellar
 
       let result;
@@ -115,7 +116,7 @@ export default function AgentTerminal() {
           currentAccount,
           tokenIn,
           amountInParsed,
-          'base-sepolia',
+          'sepolia',
           '0x0000000000000000000000000000000000000000' // mock destination
         );
       } else {

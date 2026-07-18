@@ -65,22 +65,36 @@ export default function MintConsole() {
       const horizonUrl = import.meta.env.VITE_STELLAR_HORIZON_URL || "https://horizon-testnet.stellar.org";
       const server = new Horizon.Server(horizonUrl);
       const acc = await server.loadAccount(addr);
-      
+      const issuerKey = import.meta.env.VITE_SAAS_ISSUER_PUBLIC_KEY;
+
+      // Read true XLM balance directly from Horizon
       const nativeBalance = acc.balances.find(b => b.asset_type === 'native');
       if (nativeBalance) {
         const formatted = Number(nativeBalance.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         setMockUsdBalance(formatted);
+      } else {
+        setMockUsdBalance(ZERO);
       }
-      
-      const tier = await getUserTier(addr);
-      const tokenId = await getStellarUserTokenId(addr);
-      
-      setUserTier(tier);
-      setOwnedTokenId(tokenId);
+
+      // Derive tier directly from Horizon balances — single source of truth
+      // Avoids ALL stale-state issues and Soroban contract errors
+      let derivedTier = 0;
+      if (issuerKey) {
+        const hasAIENT = acc.balances.some(
+          b => b.asset_code === 'AIENT' && b.asset_issuer === issuerKey && Number(b.balance) > 0
+        );
+        const hasAIPRO = acc.balances.some(
+          b => b.asset_code === 'AIPRO' && b.asset_issuer === issuerKey && Number(b.balance) > 0
+        );
+        if (hasAIENT) derivedTier = 2;
+        else if (hasAIPRO) derivedTier = 1;
+      }
+      setUserTier(derivedTier);
+      setOwnedTokenId(derivedTier > 0 ? 1 : 0); // simplified — just needs to be >0 for cancel
     } catch (err) {
       console.warn('[MintConsole] fetchBalances encountered a critical error:', err);
       setMockUsdBalance(ZERO);
-      setUserTier(-1);
+      setUserTier(0);
       setOwnedTokenId(0);
     }
   };
@@ -102,10 +116,23 @@ export default function MintConsole() {
       fetchBalances(account).catch(e => console.warn('[MintConsole] Hydration failed:', e));
     } else {
       setMockUsdBalance(ZERO);
-      setUserTier(-1);
+      setUserTier(0);
       setOwnedTokenId(0);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account, isStellarConnected]);
+
+  // Force-reset: clears UI state when on-chain is already clean but UI is stale
+  const handleForceReset = async () => {
+    if (!account) return;
+    setExecutionError('');
+    setTxHash('');
+    setStatus('IDLE');
+    setUserTier(0);
+    setOwnedTokenId(0);
+    // Re-verify from chain immediately to confirm
+    await fetchBalances(account);
+  };
 
   const handleMint = async () => {
     if (isMinting) return;
@@ -133,6 +160,8 @@ export default function MintConsole() {
       if (result && result.successful) {
         setTxHash(result.hash);
         setStatus('MINTED');
+        // Wait 2s for Horizon to index the new asset before re-reading tier
+        await new Promise(r => setTimeout(r, 2000));
         await fetchBalances(currentAccount);
       }
     } catch (err) {
@@ -163,16 +192,18 @@ export default function MintConsole() {
         currentAccount = await connectWalletLocal();
       }
       
-      if (userTier > 0) {
-        setStatus('BURNING_NFT');
-        const tierLevel = activeTier.id === 'nexus' ? 2 : 1;
-        const result = await cancelTier(tierLevel);
-        if (result && result.hash) {
-          setTxHash(result.hash);
-        }
+      // Always attempt burn — use activeTier.id to determine which asset to burn back
+      // Do NOT gate on local userTier state (stale). Let Horizon reject if no balance.
+      setStatus('BURNING_NFT');
+      const tierLevel = activeTier.id === 'nexus' ? 2 : 1;
+      const result = await cancelTier(tierLevel);
+      if (result && result.hash) {
+        setTxHash(result.hash);
       }
 
       setStatus('CANCELLED');
+      // Wait 2s for Horizon to index the burn before re-reading balances
+      await new Promise(r => setTimeout(r, 2000));
       await fetchBalances(currentAccount);
     } catch (err) {
       console.error('[MintConsole] Cancellation Error:', err);
@@ -200,7 +231,9 @@ export default function MintConsole() {
     return null;
   };
 
-  const isBadgeOwned = activeTier.plan <= userTier;
+  // Badge is only owned if Horizon confirms a non-zero AIENT or AIPRO balance
+  // userTier 0 = no token = never show badge as owned
+  const isBadgeOwned = userTier > 0 && activeTier.plan <= userTier;
   const badgeStyle = {
     filter: isBadgeOwned ? 'none' : 'grayscale(100%) opacity(50%)',
     transition: 'all 0.3s ease'
@@ -279,6 +312,27 @@ export default function MintConsole() {
               {isMinting ? 'CANCELLING...' : 'CANCEL SUBSCRIPTION & BURN NFT'}
             </button>
           )}
+
+          {/* Escape hatch: force-sync UI with Horizon if badge shows stale */}
+          <button
+            type="button"
+            onClick={handleForceReset}
+            disabled={isMinting}
+            style={{
+              marginTop: '12px',
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.15)',
+              color: '#6b7280',
+              padding: '8px 14px',
+              fontSize: '11px',
+              fontFamily: 'Geist Mono, monospace',
+              cursor: 'pointer',
+              letterSpacing: '0.08em',
+              width: '100%',
+            }}
+          >
+            ↻ SYNC_STATE_FROM_CHAIN
+          </button>
           
           {renderStatusIndicator()}
 

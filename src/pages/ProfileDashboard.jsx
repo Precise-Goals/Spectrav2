@@ -4,6 +4,7 @@ import { Mail, Phone, Edit2, Activity, Zap, Shield, Save, User, ArrowRightLeft, 
 import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
 import { useError } from '../context/ErrorContext';
+import { useRateLimit } from '../context/RateLimitContext';
 import { getProfile, createProfile, updateProfile } from '../lib/stellar/contracts/profile';
 import { getUserTier } from "../services/tierVerification";
 
@@ -241,6 +242,7 @@ const LogItem = ({ icon, title, sub, time }) => (
 export default function ProfileDashboard() {
   const { connectWallet, stellarPublicKey, isStellarConnected, fetchProfileAndTier } = useAuth();
   const { showError } = useError();
+  const { getUsage } = useRateLimit();
   const navigate = useNavigate();
 
   const account = stellarPublicKey;
@@ -450,10 +452,10 @@ export default function ProfileDashboard() {
           <CyberCard>
             <Flex justify="space-between" align="center">
               <Flex col gap="12px">
-                <Text color="#9CA3AF" size="12px" upper spacing="0.1em">HOURLY AGENT USAGES</Text>
+                <Text color="#9CA3AF" size="12px" upper spacing="0.1em">DAILY AGENT USAGES</Text>
                 <div>
-                  <Text color="#1D4ED8" size="42px" weight="700" sans>0</Text>
-                  <Text size="42px" weight="700" sans> / {userTier === 0 ? '10' : userTier === 1 ? '15' : '30'}</Text>
+                  <Text color="#1D4ED8" size="42px" weight="700" sans>{getUsage().used}</Text>
+                  <Text size="42px" weight="700" sans> / {getUsage().limit}</Text>
                 </div>
               </Flex>
               <HollowIconBox>

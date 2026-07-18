@@ -27,6 +27,19 @@ export function AuthProvider({ children }) {
   });
   const isStellarConnected = !!stellarPublicKey;
 
+  // 6-hour auto sign-out — Ponytail: native setTimeout, no library needed
+  useEffect(() => {
+    if (!stellarPublicKey) return;
+    const SIX_HOURS = 6 * 60 * 60 * 1000;
+    const timer = setTimeout(() => {
+      localStorage.removeItem('spectra_stellar_wallet');
+      setStellarPublicKey('');
+      setIsLoggedIn(false);
+      navigate('/login');
+    }, SIX_HOURS);
+    return () => clearTimeout(timer);
+  }, [stellarPublicKey, navigate]);
+
   const fetchProfileAndTier = useCallback(async (address) => {
     if (!address) return;
     setIsLoadingProfile(true);

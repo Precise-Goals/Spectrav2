@@ -156,12 +156,9 @@ export default function SwapBox({
         throw new Error("No Freighter wallet connected.");
       }
 
-      const tokenInSAC = resolveSacAddress(activePayAssetMeta.id);
-      const tokenOutSAC = resolveSacAddress(activeAssetMeta.id);
-      
-      if (!tokenInSAC.startsWith('C') || !tokenOutSAC.startsWith('C') || tokenInSAC.length !== 56) {
-        throw new Error('CRITICAL ROUTING ERROR: Stellar session attempted to execute using non-SAC (0x...) token addresses.');
-      }
+      // Pass symbols directly — getClassicAsset resolves XLM/USDC/EURC without SAC confusion
+      const tokenInSAC = activePayAssetMeta.id;  // e.g. 'XLM', 'USDC'
+      const tokenOutSAC = activeAssetMeta.id;    // e.g. 'USDC', 'EURC'
       
       const decimalsIn = activePayAssetMeta.decimals;
       const amountInParsed = Math.floor(safeAmount * Math.pow(10, decimalsIn)).toString();
@@ -172,7 +169,7 @@ export default function SwapBox({
           currentAccount,
           tokenInSAC,
           amountInParsed,
-          'base-sepolia',
+          'sepolia',
           bridgeDestination
         );
       } else {
