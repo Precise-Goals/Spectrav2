@@ -71,6 +71,79 @@ const NavLink = styled(Link)`
   }
 `;
 
+const DropdownWrap = styled.div`
+  position: relative;
+
+  &:hover > div {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+`;
+
+const DropdownTrigger = styled.span`
+  font-family: 'Geist', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: ${({ $active }) => $active ? 'var(--color-primary)' : 'var(--color-secondary)'};
+  cursor: pointer;
+  padding-bottom: 2px;
+  border-bottom: ${({ $active }) => $active ? '1px solid var(--border-color)' : '1px solid transparent'};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &:hover {
+    color: var(--color-primary);
+  }
+`;
+
+const DropdownPanel = styled.div`
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 0;
+  min-width: 160px;
+  z-index: 100;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+  }
+`;
+
+const DropdownLink = styled(Link)`
+  display: block;
+  padding: 8px 16px;
+  font-family: 'Geist', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+  text-decoration: none;
+  transition: color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    color: var(--color-primary);
+    background: var(--border-color);
+  }
+`;
+
 const NavRight = styled.div`
   display: flex;
   align-items: center;
@@ -121,14 +194,16 @@ const AuthButton = styled.button`
 import { useAuth } from '../../context/AuthContext';
 
 /* ─── Component ──────────────────────────────────────────────────────────────── */
-const NAV_LINKS = [
-  { to: '/',         label: 'Home' },
-  { to: '/about',    label: 'About' },
+const PRODUCTS = [
   { to: '/agent',    label: 'Agent' },
   { to: '/exchange', label: 'Exchange' },
-  { to: '/mint',     label: 'Pricing' },
-  { to: '/journal',  label: 'Journal' },
   { to: '/spectra',  label: 'Spectra AI' },
+];
+
+const RESOURCES = [
+  { to: '/guide',    label: 'Guide' },
+  { to: '/journal',  label: 'Journal' },
+  { to: '/about',    label: 'About' },
 ];
 
 export default function FluidNav() {
@@ -190,14 +265,35 @@ export default function FluidNav() {
         <Logo to="/">SPECTRA</Logo>
 
         <NavLinks>
-          {NAV_LINKS.map(({ to, label }) => {
-            const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
-            return (
-              <NavLink key={to} to={to} $active={isActive}>
-                {label}
-              </NavLink>
-            );
-          })}
+          <NavLink to="/" $active={location.pathname === '/'}>
+            Home
+          </NavLink>
+
+          <DropdownWrap>
+            <DropdownTrigger $active={PRODUCTS.some(p => location.pathname.startsWith(p.to))}>
+              Products ▾
+            </DropdownTrigger>
+            <DropdownPanel>
+              {PRODUCTS.map(({ to, label }) => (
+                <DropdownLink key={to} to={to}>{label}</DropdownLink>
+              ))}
+            </DropdownPanel>
+          </DropdownWrap>
+
+          <DropdownWrap>
+            <DropdownTrigger $active={RESOURCES.some(r => location.pathname.startsWith(r.to))}>
+              Resources ▾
+            </DropdownTrigger>
+            <DropdownPanel>
+              {RESOURCES.map(({ to, label }) => (
+                <DropdownLink key={to} to={to}>{label}</DropdownLink>
+              ))}
+            </DropdownPanel>
+          </DropdownWrap>
+
+          <NavLink to="/mint" $active={location.pathname === '/mint'}>
+            Pricing
+          </NavLink>
         </NavLinks>
 
         <NavRight>
