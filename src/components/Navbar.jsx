@@ -23,7 +23,7 @@ const NavWrap = styled.nav`
   margin: 0 auto;
   z-index: 50;
   border-radius: 9999px;
-  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border: 1px solid blue;
 
   @media (max-width: 1024px) {
     width: 90%;
@@ -104,63 +104,58 @@ const AuthButton = styled.button`
   }
 `;
 
-/* ─── Matrix Rain Pattern (Spectra AI) ────────────────────────────────────── */
+/* ─── Pattern Pattern (Spectra AI) ────────────────────────────────────── */
 
-const matrixFall = keyframes`
-  0% { transform: translateY(-100%); opacity: 1; }
-  100% { transform: translateY(300%); opacity: 0; }
-`;
-
-const MatrixWrap = styled.div`
+const SpectraWrap = styled.div`
   width: 100%;
   height: 100%;
-  background: #000;
   position: relative;
   overflow: hidden;
   border-radius: 16px;
+  background: #000;
 
-  .mc {
-    position: absolute;
-    top: -100%;
-    width: 18px;
-    font-size: 14px;
-    line-height: 16px;
-    font-weight: bold;
-    animation: ${matrixFall} linear infinite;
-    white-space: nowrap;
-
-    &::before {
-      content: "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789";
-      position: absolute;
-      top: 0;
-      left: 0;
-      background: linear-gradient(to bottom, #fff 0%, #fff 5%, #00ff41 10%, #00ff41 20%, #00dd33 30%, #00bb22 40%, #009911 50%, #007700 60%, #005500 70%, #003300 80%, rgba(0,255,65,0.5) 90%, transparent 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      writing-mode: vertical-lr;
-      letter-spacing: 1px;
-    }
+  .container {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(blue 2px, transparent 2px),
+      linear-gradient(90deg, blue 2px, transparent 2px);
+    background-size: 100px 100px;
   }
-
-  .mc:nth-child(odd)::before { content: "ガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポヴァィゥェォ0987654321"; }
-  .mc:nth-child(1)  { left: 0px;   animation-delay: -2.5s; animation-duration: 3s; }
-  .mc:nth-child(2)  { left: 22px;  animation-delay: -3.2s; animation-duration: 4s; }
-  .mc:nth-child(3)  { left: 44px;  animation-delay: -1.8s; animation-duration: 2.5s; }
-  .mc:nth-child(4)  { left: 66px;  animation-delay: -2.9s; animation-duration: 3.5s; }
-  .mc:nth-child(5)  { left: 88px;  animation-delay: -1.5s; animation-duration: 3s; }
-  .mc:nth-child(6)  { left: 110px; animation-delay: -3.8s; animation-duration: 4.5s; }
-  .mc:nth-child(7)  { left: 132px; animation-delay: -2.1s; animation-duration: 2.8s; }
-  .mc:nth-child(8)  { left: 154px; animation-delay: -2.7s; animation-duration: 3.2s; }
-  .mc:nth-child(9)  { left: 176px; animation-delay: -3.4s; animation-duration: 3.8s; }
-  .mc:nth-child(10) { left: 198px; animation-delay: -1.9s; animation-duration: 2.7s; }
+  .container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(-45deg, blue 20px, transparent 20px),
+      linear-gradient(-135deg, blue 20px, transparent 20px),
+      linear-gradient(135deg, blue 20px, transparent 20px),
+      linear-gradient(45deg, blue 20px, transparent 20px);
+    background-size: 100px 100px;
+    background-position: 50px 50px;
+  }
+  .container::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(45deg, blue 20px, transparent 20px),
+      linear-gradient(-45deg, blue 20px, transparent 20px),
+      linear-gradient(135deg, blue 20px, transparent 20px),
+      linear-gradient(-135deg, blue 20px, transparent 20px);
+    background-size: 100px 100px;
+    background-position: 1px 1px;
+  }
 `;
 
-function MatrixVisual() {
+function SpectraVisual() {
   return (
-    <MatrixWrap>
-      {Array.from({ length: 10 }, (_, i) => <div key={i} className="mc" />)}
-    </MatrixWrap>
+    <SpectraWrap>
+      <div className="container" />
+    </SpectraWrap>
   );
 }
 
@@ -171,13 +166,13 @@ const PRODUCTS_DATA = [
     to: '/agent', label: 'Agent', desc: 'Intent-driven DeFi assistant powered by Sarvam AI.',
     patternStyle: {
       '--s': '100px',
-      '--c1': '#f8b195',
-      '--c2': '#355c7d',
+      '--c1': '#add8e6',
+      '--c2': 'blue',
       background: [
-        'radial-gradient(100% 100% at 100% 0, #f8b195 4%, #355c7d 4% 14%, #f8b195 14% 24%, #355c7d 22% 34%, #f8b195 34% 44%, #355c7d 44% 56%, #f8b195 56% 66%, #355c7d 66% 76%, #f8b195 76% 86%, #355c7d 86% 96%, #0008 96%, transparent)',
-        'radial-gradient(100% 100% at 0 100%, transparent, #0008 4%, #355c7d 4% 14%, #f8b195 14% 24%, #355c7d 22% 34%, #f8b195 34% 44%, #355c7d 44% 56%, #f8b195 56% 66%, #355c7d 66% 76%, #f8b195 76% 86%, #355c7d 86% 96%, #f8b195 96%)',
+        'radial-gradient(100% 100% at 100% 0, #add8e6 4%, blue 4% 14%, #add8e6 14% 24%, blue 22% 34%, #add8e6 34% 44%, blue 44% 56%, #add8e6 56% 66%, blue 66% 76%, #add8e6 76% 86%, blue 86% 96%, #0008 96%, transparent)',
+        'radial-gradient(100% 100% at 0 100%, transparent, #0008 4%, blue 4% 14%, #add8e6 14% 24%, blue 22% 34%, #add8e6 34% 44%, blue 44% 56%, #add8e6 56% 66%, blue 66% 76%, #add8e6 76% 86%, blue 86% 96%, #add8e6 96%)',
       ].join(', '),
-      backgroundColor: '#f8b195',
+      backgroundColor: '#add8e6',
       backgroundSize: '100px 100px',
     },
   },
@@ -185,23 +180,23 @@ const PRODUCTS_DATA = [
     to: '/exchange', label: 'Exchange', desc: 'Cross-chain swaps with optimal routing.',
     patternStyle: {
       background: [
-        'conic-gradient(from 122deg at 50% 85.15%, #000 0 58deg, #1e1e1e 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
-        'conic-gradient(from 122deg at 50% 72.5%, #ededee 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
-        'conic-gradient(from 58deg at 82.85% 50%, #1e1e1e 0 64deg, #fff0 0 100%) 50% / 84.5px 64px',
-        'conic-gradient(from 58deg at 66.87% 50%, #ededee 0 64deg, #000 0 130deg, #fff0 0 100%) 50% / 84.5px 64px',
-        'conic-gradient(from 238deg at 17.15% 50%, #000 0 64deg, #fff0 0 100%) 50% / 84.5px 64px',
-        'conic-gradient(from 172deg at 33.13% 50%, #1e1e1e 0 66deg, #ededee 0 130deg, #fff0 0 100%) 50% / 84.5px 64px',
-        'linear-gradient(98deg, #1e1e1e 0 15%, #fff0 calc(15% + 1px) 100%) 50% / 84.5px 64px',
-        'linear-gradient(-98deg, #000 0 15%, #fff0 calc(15% + 1px) 100%) 50% / 84.5px 64px',
-        'conic-gradient(from -58deg at 50.25% 14.85%, #1e1e1e 0 58deg, #000 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
-        'conic-gradient(from -58deg at 50% 28.125%, #ededee 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
-        'linear-gradient(90deg, #000 0 50%, #1e1e1e 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 122deg at 50% 85.15%, #000033 0 58deg, blue 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 122deg at 50% 72.5%, #add8e6 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 58deg at 82.85% 50%, blue 0 64deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 58deg at 66.87% 50%, #add8e6 0 64deg, #000033 0 130deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 238deg at 17.15% 50%, #000033 0 64deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 172deg at 33.13% 50%, blue 0 66deg, #add8e6 0 130deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'linear-gradient(98deg, blue 0 15%, #fff0 calc(15% + 1px) 100%) 50% / 84.5px 64px',
+        'linear-gradient(-98deg, #000033 0 15%, #fff0 calc(15% + 1px) 100%) 50% / 84.5px 64px',
+        'conic-gradient(from -58deg at 50.25% 14.85%, blue 0 58deg, #000033 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from -58deg at 50% 28.125%, #add8e6 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'linear-gradient(90deg, #000033 0 50%, blue 0 100%) 50% / 84.5px 64px',
       ].join(', '),
     },
   },
   {
     to: '/spectra', label: 'Spectra AI', desc: '24/7 AI help desk & support center.',
-    Visual: MatrixVisual,
+    Visual: SpectraVisual,
   },
 ];
 
@@ -210,8 +205,8 @@ const RESOURCES_DATA = [
     to: '/guide', label: 'Guide', desc: 'Interactive documentation & tutorials.',
     patternStyle: {
       backgroundImage: [
-        'linear-gradient(45deg, rgb(248,255,182) 25%, transparent 25%, transparent 75%, rgb(248,255,182) 75%, rgb(248,255,182))',
-        'linear-gradient(135deg, rgb(248,255,182) 25%, rgb(0,3,49) 25%, rgb(0,3,49) 75%, rgb(248,255,182) 75%, rgb(248,255,182))',
+        'linear-gradient(45deg, #add8e6 25%, transparent 25%, transparent 75%, #add8e6 75%, #add8e6)',
+        'linear-gradient(135deg, #add8e6 25%, blue 25%, blue 75%, #add8e6 75%, #add8e6)',
       ].join(', '),
       backgroundSize: '90px 90px',
       backgroundPosition: '0 0, 135px 135px',
@@ -221,10 +216,10 @@ const RESOURCES_DATA = [
     to: '/journal', label: 'Journal', desc: 'Execution logs & protocol research.',
     patternStyle: {
       background: [
-        'radial-gradient(25% 25% at 25% 25%, #180a22 99%, transparent 101%) 60px 60px / 120px 120px',
-        'radial-gradient(25% 25% at 25% 25%, #180a22 99%, transparent 101%) 0 0 / 120px 120px',
-        'radial-gradient(50% 50%, #5b42f3 98%, transparent) 0 0 / 60px 60px',
-        'repeating-conic-gradient(#5b42f3 0 50%, #180a22 0 100%) 30px 0 / 120px 60px',
+        'radial-gradient(25% 25% at 25% 25%, #000033 99%, transparent 101%) 60px 60px / 120px 120px',
+        'radial-gradient(25% 25% at 25% 25%, #000033 99%, transparent 101%) 0 0 / 120px 120px',
+        'radial-gradient(50% 50%, blue 98%, transparent) 0 0 / 60px 60px',
+        'repeating-conic-gradient(blue 0 50%, #000033 0 100%) 30px 0 / 120px 60px',
       ].join(', '),
     },
   },
@@ -232,9 +227,9 @@ const RESOURCES_DATA = [
     to: '/about', label: 'About', desc: 'Architecture overview & mission statement.',
     patternStyle: {
       backgroundImage: [
-        'repeating-linear-gradient(90deg, #ff0000 0, #ff0000 50%, #fff 50%, #fff 100%)',
-        'repeating-linear-gradient(0deg, #ff0000 0, #ff0000 50%, #fff 50%, #fff 100%)',
-        'repeating-conic-gradient(from 45deg, #006400 0 25%, #32cd32 0 50%)',
+        'repeating-linear-gradient(90deg, blue 0, blue 50%, #fff 50%, #fff 100%)',
+        'repeating-linear-gradient(0deg, blue 0, blue 50%, #fff 50%, #fff 100%)',
+        'repeating-conic-gradient(from 45deg, #00008b 0 25%, #1e90ff 0 50%)',
       ].join(', '),
       backgroundSize: '14px 14px, 28px 28px',
       backgroundPosition: '0 0, center',
