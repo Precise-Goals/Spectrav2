@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ChevronDown, ArrowUpRight, Menu, X } from 'lucide-react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
@@ -104,18 +104,142 @@ const AuthButton = styled.button`
   }
 `;
 
+/* ─── Matrix Rain Pattern (Spectra AI) ────────────────────────────────────── */
+
+const matrixFall = keyframes`
+  0% { transform: translateY(-100%); opacity: 1; }
+  100% { transform: translateY(300%); opacity: 0; }
+`;
+
+const MatrixWrap = styled.div`
+  width: 100%;
+  height: 100%;
+  background: #000;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+
+  .mc {
+    position: absolute;
+    top: -100%;
+    width: 18px;
+    font-size: 14px;
+    line-height: 16px;
+    font-weight: bold;
+    animation: ${matrixFall} linear infinite;
+    white-space: nowrap;
+
+    &::before {
+      content: "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789";
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: linear-gradient(to bottom, #fff 0%, #fff 5%, #00ff41 10%, #00ff41 20%, #00dd33 30%, #00bb22 40%, #009911 50%, #007700 60%, #005500 70%, #003300 80%, rgba(0,255,65,0.5) 90%, transparent 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      writing-mode: vertical-lr;
+      letter-spacing: 1px;
+    }
+  }
+
+  .mc:nth-child(odd)::before { content: "ガギグゲゴザジズゼゾダヂヅデドバビブベボパピプペポヴァィゥェォ0987654321"; }
+  .mc:nth-child(1)  { left: 0px;   animation-delay: -2.5s; animation-duration: 3s; }
+  .mc:nth-child(2)  { left: 22px;  animation-delay: -3.2s; animation-duration: 4s; }
+  .mc:nth-child(3)  { left: 44px;  animation-delay: -1.8s; animation-duration: 2.5s; }
+  .mc:nth-child(4)  { left: 66px;  animation-delay: -2.9s; animation-duration: 3.5s; }
+  .mc:nth-child(5)  { left: 88px;  animation-delay: -1.5s; animation-duration: 3s; }
+  .mc:nth-child(6)  { left: 110px; animation-delay: -3.8s; animation-duration: 4.5s; }
+  .mc:nth-child(7)  { left: 132px; animation-delay: -2.1s; animation-duration: 2.8s; }
+  .mc:nth-child(8)  { left: 154px; animation-delay: -2.7s; animation-duration: 3.2s; }
+  .mc:nth-child(9)  { left: 176px; animation-delay: -3.4s; animation-duration: 3.8s; }
+  .mc:nth-child(10) { left: 198px; animation-delay: -1.9s; animation-duration: 2.7s; }
+`;
+
+function MatrixVisual() {
+  return (
+    <MatrixWrap>
+      {Array.from({ length: 10 }, (_, i) => <div key={i} className="mc" />)}
+    </MatrixWrap>
+  );
+}
+
 /* ─── INITIAL Nav Data Only (Products & Resources) ───────────────────────── */
 
 const PRODUCTS_DATA = [
-  { to: '/agent',    label: 'Agent',      desc: 'Intent-driven DeFi assistant powered by Sarvam AI.', colors: ['#818cf8', '#4f46e5', '#a5b4fc'] },
-  { to: '/exchange', label: 'Exchange',   desc: 'Cross-chain swaps with optimal routing.',          colors: ['#a78bfa', '#7c3aed', '#c4b5fd'] },
-  { to: '/spectra',  label: 'Spectra AI', desc: '24/7 AI help desk & support center.',              colors: ['#67e8f9', '#0891b2', '#a5f3fc'] },
+  {
+    to: '/agent', label: 'Agent', desc: 'Intent-driven DeFi assistant powered by Sarvam AI.',
+    patternStyle: {
+      '--s': '100px',
+      '--c1': '#f8b195',
+      '--c2': '#355c7d',
+      background: [
+        'radial-gradient(100% 100% at 100% 0, #f8b195 4%, #355c7d 4% 14%, #f8b195 14% 24%, #355c7d 22% 34%, #f8b195 34% 44%, #355c7d 44% 56%, #f8b195 56% 66%, #355c7d 66% 76%, #f8b195 76% 86%, #355c7d 86% 96%, #0008 96%, transparent)',
+        'radial-gradient(100% 100% at 0 100%, transparent, #0008 4%, #355c7d 4% 14%, #f8b195 14% 24%, #355c7d 22% 34%, #f8b195 34% 44%, #355c7d 44% 56%, #f8b195 56% 66%, #355c7d 66% 76%, #f8b195 76% 86%, #355c7d 86% 96%, #f8b195 96%)',
+      ].join(', '),
+      backgroundColor: '#f8b195',
+      backgroundSize: '100px 100px',
+    },
+  },
+  {
+    to: '/exchange', label: 'Exchange', desc: 'Cross-chain swaps with optimal routing.',
+    patternStyle: {
+      background: [
+        'conic-gradient(from 122deg at 50% 85.15%, #000 0 58deg, #1e1e1e 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 122deg at 50% 72.5%, #ededee 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 58deg at 82.85% 50%, #1e1e1e 0 64deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 58deg at 66.87% 50%, #ededee 0 64deg, #000 0 130deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 238deg at 17.15% 50%, #000 0 64deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from 172deg at 33.13% 50%, #1e1e1e 0 66deg, #ededee 0 130deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'linear-gradient(98deg, #1e1e1e 0 15%, #fff0 calc(15% + 1px) 100%) 50% / 84.5px 64px',
+        'linear-gradient(-98deg, #000 0 15%, #fff0 calc(15% + 1px) 100%) 50% / 84.5px 64px',
+        'conic-gradient(from -58deg at 50.25% 14.85%, #1e1e1e 0 58deg, #000 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'conic-gradient(from -58deg at 50% 28.125%, #ededee 0 116deg, #fff0 0 100%) 50% / 84.5px 64px',
+        'linear-gradient(90deg, #000 0 50%, #1e1e1e 0 100%) 50% / 84.5px 64px',
+      ].join(', '),
+    },
+  },
+  {
+    to: '/spectra', label: 'Spectra AI', desc: '24/7 AI help desk & support center.',
+    Visual: MatrixVisual,
+  },
 ];
 
 const RESOURCES_DATA = [
-  { to: '/guide',    label: 'Guide',      desc: 'Interactive documentation & tutorials.',            colors: ['#fbbf24', '#d97706', '#fde68a'] },
-  { to: '/journal',  label: 'Journal',    desc: 'Execution logs & protocol research.',               colors: ['#86efac', '#16a34a', '#bbf7d0'] },
-  { to: '/about',    label: 'About',      desc: 'Architecture overview & mission statement.',        colors: ['#f472b6', '#db2777', '#fbcfe8'] },
+  {
+    to: '/guide', label: 'Guide', desc: 'Interactive documentation & tutorials.',
+    patternStyle: {
+      backgroundImage: [
+        'linear-gradient(45deg, rgb(248,255,182) 25%, transparent 25%, transparent 75%, rgb(248,255,182) 75%, rgb(248,255,182))',
+        'linear-gradient(135deg, rgb(248,255,182) 25%, rgb(0,3,49) 25%, rgb(0,3,49) 75%, rgb(248,255,182) 75%, rgb(248,255,182))',
+      ].join(', '),
+      backgroundSize: '90px 90px',
+      backgroundPosition: '0 0, 135px 135px',
+    },
+  },
+  {
+    to: '/journal', label: 'Journal', desc: 'Execution logs & protocol research.',
+    patternStyle: {
+      background: [
+        'radial-gradient(25% 25% at 25% 25%, #180a22 99%, transparent 101%) 60px 60px / 120px 120px',
+        'radial-gradient(25% 25% at 25% 25%, #180a22 99%, transparent 101%) 0 0 / 120px 120px',
+        'radial-gradient(50% 50%, #5b42f3 98%, transparent) 0 0 / 60px 60px',
+        'repeating-conic-gradient(#5b42f3 0 50%, #180a22 0 100%) 30px 0 / 120px 60px',
+      ].join(', '),
+    },
+  },
+  {
+    to: '/about', label: 'About', desc: 'Architecture overview & mission statement.',
+    patternStyle: {
+      backgroundImage: [
+        'repeating-linear-gradient(90deg, #ff0000 0, #ff0000 50%, #fff 50%, #fff 100%)',
+        'repeating-linear-gradient(0deg, #ff0000 0, #ff0000 50%, #fff 50%, #fff 100%)',
+        'repeating-conic-gradient(from 45deg, #006400 0 25%, #32cd32 0 50%)',
+      ].join(', '),
+      backgroundSize: '14px 14px, 28px 28px',
+      backgroundPosition: '0 0, center',
+    },
+  },
 ];
 
 const NAV_TABS = ["Products", "Resources"];
@@ -136,7 +260,7 @@ function getTabItems(tab) {
 const springVisual = { type: "spring", stiffness: 350, damping: 20, mass: 0.7 };
 const smoothSpring = { type: "spring", stiffness: 400, damping: 28 };
 
-function NavVisual({ colors }) {
+function NavVisual({ patternStyle, Visual }) {
   return (
     <motion.div
       style={{
@@ -144,58 +268,14 @@ function NavVisual({ colors }) {
         height: '100%',
         borderRadius: '16px',
         overflow: 'hidden',
-        position: 'relative',
-        background: colors[0],
+        ...(Visual ? {} : patternStyle),
       }}
       initial={{ opacity: 0, scale: 0.88, rotate: -3 }}
       animate={{ opacity: 1, scale: 1, rotate: 0 }}
       exit={{ opacity: 0, scale: 0.88, rotate: 3 }}
       transition={springVisual}
     >
-      {/* Large circle — bottom right */}
-      <motion.div
-        style={{
-          position: 'absolute',
-          width: '70%',
-          height: '70%',
-          borderRadius: '50%',
-          background: colors[1],
-          right: '-10%',
-          bottom: '-10%',
-        }}
-        initial={{ scale: 0.5, opacity: 0, y: 30 }}
-        animate={{ scale: 1, opacity: 0.7, y: 0 }}
-        transition={{ ...springVisual, delay: 0.04 }}
-      />
-      {/* Small circle — accent */}
-      <motion.div
-        style={{
-          position: 'absolute',
-          width: '45%',
-          height: '45%',
-          borderRadius: '50%',
-          background: colors[2],
-          right: '5%',
-          bottom: '5%',
-        }}
-        initial={{ scale: 0.3, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 0.6, y: 0 }}
-        transition={{ ...springVisual, delay: 0.08 }}
-      />
-      {/* Vertical gradient bar */}
-      <motion.div
-        style={{
-          position: 'absolute',
-          width: '40%',
-          height: '100%',
-          background: `linear-gradient(180deg, ${colors[1]}88, ${colors[2]}44)`,
-          left: '30%',
-          top: 0,
-        }}
-        initial={{ opacity: 0, x: -30, scaleY: 0.8 }}
-        animate={{ opacity: 0.5, x: 0, scaleY: 1 }}
-        transition={{ ...smoothSpring, delay: 0.06 }}
-      />
+      {Visual && <Visual />}
     </motion.div>
   );
 }
@@ -272,7 +352,9 @@ function NavItem({ item, layoutScope, isHovered, onHover, onClick }) {
 
 function DropdownMenu({ tab, hoveredIdx, setHoveredIdx, onItemClick }) {
   const items = getTabItems(tab);
-  const activeColors = items[hoveredIdx]?.colors || items[0]?.colors || ['#333', '#555', '#777'];
+  const activeItem = items[hoveredIdx] || items[0] || {};
+  const activePattern = activeItem.patternStyle || {};
+  const ActiveVisual = activeItem.Visual || null;
 
   return (
     <motion.div
@@ -309,7 +391,7 @@ function DropdownMenu({ tab, hoveredIdx, setHoveredIdx, onItemClick }) {
       {/* Right — Visual Card */}
       <div style={{ width: '210px', padding: '12px 12px 12px 0', flexShrink: 0 }}>
         <AnimatePresence mode="wait">
-          <NavVisual key={`${tab}-${hoveredIdx}`} colors={activeColors} />
+          <NavVisual key={`${tab}-${hoveredIdx}`} patternStyle={activePattern} Visual={ActiveVisual} />
         </AnimatePresence>
       </div>
     </motion.div>
