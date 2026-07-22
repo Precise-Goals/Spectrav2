@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import FluidNav from './FluidNav';
+import Navbar from '../Navbar';
 import Footer from './Footer';
 
 const Shell = styled.div`
@@ -20,7 +20,7 @@ export default function MainLayout({ children }) {
   return (
     <Shell>
       <div className="scroll-progress-bar" />
-      <FluidNav />
+      <Navbar />
       <PageContent>{children}</PageContent>
       <Footer />
     </Shell>

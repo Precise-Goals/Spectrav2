@@ -36,33 +36,25 @@ const RETRY_BASE_DELAY_MS = 800;
 
 // ─── System Prompt ────────────────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are a strict Web3 DeFi intent parser. You must output ONLY a raw, valid JSON object. DO NOT output <think> tags. DO NOT output markdown formatting like \`\`\`json. DO NOT output any conversational text before or after the JSON.
+const DEFI_ACTIONS = ["swap", "mint", "burn", "stake", "unstake", "transfer", "approve", "bridge", "lend", "borrow", "repay", "claim"];
 
-If the user specifies a clear transactional intent (e.g. contains an action, amount, and token, such as "swap 44.3625 TYI to ETH in hindi"), you MUST resolve it to the transaction schema:
-{
-  "action": "<one of: swap | mint | burn | stake | unstake | transfer | approve | bridge | lend | borrow | repay | claim>",
-  "amount": "<numeric string, e.g. '0.5' or '100', or 'max' if the user specifies the full balance>",
-  "token": "<uppercase token symbol, e.g. 'ETH', 'USDC', 'WBTC'>"
-}
-DO NOT output an error/conversational message if the transactional parameters are present, even if the user appends language instructions like "in hindi" or "en español". The JSON output must remain strictly in English.
+const getDefiSystemPrompt = () => `Web3 DeFi parser. Output ONLY raw JSON. No markdown or text.
+Schema: {"action":"<${DEFI_ACTIONS.join('|')}>","amount":"<number|max>","token":"<SYMBOL>"}
+Keep JSON English, even for regional input.
 
-Rules for vague, conversational, or bridging input (only when parameters like amount or token are missing or ambiguous):
-1. MULTILINGUAL SUPPORT: You must detect and process queries in the user's language (e.g. Hindi, Spanish, French, German, Italian, etc.). If the input is conversational, vague, or asks a question, your response in the 'error' key must be written in that SAME language.
-2. BRIDGING GUIDANCE: If the user asks about bridging (e.g., 'How do I bridge?', 'bridge money', or 'transfer to another chain'), you must provide a detailed guide in their query language inside the 'error' key. Explain that:
-   - Bridging is flexible via the Universal Gas Framework (UGF).
-   - They can bridge assets gaslessly between EVM networks (e.g., Ethereum Sepolia to Base Sepolia).
-   - They only need to select the asset, specify the amount, and confirm the EIP-712 cryptographic handshake.
-   - Gas fees are paid gaslessly in TYI (Mock USD) with zero ETH required.
-3. When prompting the user for an amount (e.g. if the token is known but amount is missing), check the balances in the provided Context. If a balance is available, mention it conversationally in their language to guide the user (e.g. "How much ETH would you like to bridge? Your current balance is 0.05 ETH.").
+Vague/Conversational Rules:
+1. Reply in user's language (incl. Romanized/Hinglish) inside 'error' key.
+2. Bridge guide: Gasless EVM bridging via UGF. Fees in TYI (no ETH). Needs asset, amount, EIP-712.
+3. If amount missing, check Context balances & prompt in their language.
 
-Example for vague query: { "error": "I can help with that! Which token and what amount would you like to bridge, and to which network?" }
+Rules:
+1. ONLY JSON.
+2. For 2 tokens, use SOURCE token.
+3. Normalise amounts.
+4. Schema fields only.
+5. No social media -> {"error":"Social media disabled."}`;
 
-Rules you MUST follow:
-1. Output ONLY the raw JSON object — no markdown fences, no explanations, no extra keys.
-2. If the user specifies two tokens (e.g. "swap ETH for USDC"), set "token" to the SOURCE token.
-3. Normalise amounts: strip currency symbols, convert words like "half" → "0.5", "a hundred" → "100".
-4. Never include any field outside the schema defined above.
-5. HARD SECURITY CONSTRAINT: You are strictly sandboxed to handle onchain transactional parameters exclusively. Zero automation on any social platforms is allowed. You must not integrate with, scrape, or post to social media networks. If a prompt includes social media actions, return { "error": "Social media automation is strictly disabled for security reasons." }.`;
+const getGeneralSystemPrompt = () => `You are Spectra, Web3 DEX AI Assistant. ONLY answer Web3/crypto/Spectra queries; otherwise refuse. Max 300 chars. Concise, conversational, no markdown. Speak user's language (reply in native language if Romanized/Hinglish).`;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -84,8 +76,8 @@ function resolveApiKey(override) {
   if (!key || key.trim() === "") {
     throw new Error(
       "[SarvamAgent] API key not found. " +
-        "Set VITE_SARVAM_API_KEY in your .env file (Vite) " +
-        "or SARVAM_API_KEY in the environment (Node.js)."
+      "Set VITE_SARVAM_API_KEY in your .env file (Vite) " +
+      "or SARVAM_API_KEY in the environment (Node.js)."
     );
   }
 
@@ -133,8 +125,8 @@ function extractIntentJson(raw) {
 
   // 2. Strip out Markdown JSON wrappers if the model still outputs them
   cleanText = cleanText
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```$/, "")
+    .replace(/^(?:json)?\s*/i, "")
+    .replace(/\s*$/, "")
     .trim();
 
   // 3. Locate the first JSON object in case the model prefixed/suffixed with prose
@@ -193,7 +185,7 @@ async function callSarvamApi(userPrompt, apiKey, context = "") {
       body: JSON.stringify({
         model: SARVAM_MODEL,
         messages: [
-          { role: "system", content: context ? `${SYSTEM_PROMPT}\n\nContext:\n${context}` : SYSTEM_PROMPT },
+          { role: "system", content: context ? `${getDefiSystemPrompt()}\n\nContext:\n${context}` : getDefiSystemPrompt() },
           { role: "user", content: userPrompt },
         ],
         temperature: 0.1,   // Keep determinism high for structured output
@@ -322,7 +314,7 @@ export async function parseDefiIntent(userPrompt, options = {}) {
   // All attempts exhausted — surface the last known error with context
   const finalError = new Error(
     `[SarvamAgent] Failed to parse DeFi intent after ${retries + 1} attempt(s). ` +
-      `Last error: ${lastError?.message}`
+    `Last error: ${lastError?.message}`
   );
   finalError.cause = lastError;
   finalError.code = lastError?.code || "UNKNOWN";
@@ -353,11 +345,11 @@ export async function tryParseDefiIntent(userPrompt, options = {}) {
  */
 export async function askGeneralAgent(userPrompt, options = {}) {
   if (!userPrompt || typeof userPrompt !== "string") return "I didn't catch that.";
-  
+
   const apiKey = resolveApiKey(options.apiKey);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  
+
   try {
     const response = await fetch(SARVAM_CHAT_ENDPOINT, {
       method: "POST",
@@ -369,9 +361,9 @@ export async function askGeneralAgent(userPrompt, options = {}) {
       body: JSON.stringify({
         model: SARVAM_MODEL,
         messages: [
-          { 
-            role: "system", 
-            content: "You are Spectra, an advanced AI Assistant for a Web3 Decentralized Exchange. You must ONLY answer questions related to Web3, blockchain, crypto, or Spectra. If the user asks about ANYTHING else, politely refuse to answer and remind them you are a Web3 assistant. EXTREMELY IMPORTANT: Keep your response strictly under 300 characters. Be highly concise and conversational. Do not use markdown. Speak in the same language the user uses." 
+          {
+            role: "system",
+            content: getGeneralSystemPrompt()
           },
           { role: "user", content: userPrompt },
         ],
@@ -379,21 +371,21 @@ export async function askGeneralAgent(userPrompt, options = {}) {
         max_tokens: 2048,
       }),
     });
-    
+
     if (!response.ok) {
       const errText = await response.text();
       console.error("[SarvamAgent] askGeneralAgent HTTP Error:", response.status, errText);
       return null;
     }
-    
+
     const data = await response.json();
     const content = data?.choices?.[0]?.message?.content;
-    
+
     if (!content) {
       console.error("[SarvamAgent] askGeneralAgent missing content in response:", data);
       return null;
     }
-    
+
     return content;
   } catch (err) {
     console.error("[SarvamAgent] askGeneralAgent catch error:", err);

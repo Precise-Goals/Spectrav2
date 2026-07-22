@@ -32,9 +32,9 @@ const Pill = styled.div`
   letter-spacing: 0.1em;
   padding: 6px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(59, 130, 246, 0.4);
-  background: rgba(59, 130, 246, 0.1);
-  color: #60a5fa;
+  border: 1px solid rgba(0, 0, 255, 0.4);
+  background: rgba(0, 0, 255, 0.1);
+  color: rgba(0, 0, 255, 0.7);
   display: inline-block;
 `;
 
@@ -46,7 +46,7 @@ const Title = styled.h1`
   margin: 0;
   
   span {
-    color: #3b82f6;
+    color: blue;
   }
 `;
 
@@ -113,8 +113,8 @@ const CardIcon = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
+  background: rgba(0, 0, 255, 0.15);
+  color: rgba(0, 0, 255, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -139,7 +139,7 @@ const LargeStat = styled.div`
   font-size: clamp(3rem, 5vw, 5rem);
   font-weight: 500;
   letter-spacing: -0.04em;
-  color: #3b82f6;
+  color: blue;
   margin-bottom: 16px;
 `;
 
@@ -213,7 +213,7 @@ export default function Journal() {
         </BentoCard>
 
         {/* Large Stat Card */}
-        <BentoCard $colSpan={2} $rowSpan={1} style={{ justifyContent: 'center', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(10,10,11,0.8))' }}>
+        <BentoCard $colSpan={2} $rowSpan={1} style={{ justifyContent: 'center', background: 'linear-gradient(135deg, rgba(0,0,255,0.1), rgba(10,10,11,0.8))' }}>
           <LargeStat>Duality.</LargeStat>
           <CardTitle style={{ marginTop: 0 }}>Supported Ecosystems</CardTitle>
           <CardText>Spectra is a hybrid multichain engine that abstracts network boundaries by executing parallel Soroban actions using Freighter.</CardText>

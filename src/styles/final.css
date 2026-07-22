@@ -15,6 +15,7 @@ nav.sc-bdDsCe.jvubsl {
 .sc-hHopjF.hHxQKp.reveal-item.delay-200.is-visible {
   border: 1px solid blue;
 }
+
 .sc-cBEgGa.kWqvoW {
   background: blue;
 }
@@ -30,9 +31,11 @@ nav.sc-bdDsCe.jvubsl {
   font-size: 1em;
   font-weight: 900;
 }
+
 .sc-fbtdoJ.bnlBPz.reveal-item.delay-200.is-visible {
   border: 1px solid blue;
 }
+
 .sc-hUheUT.gemJjm {
   width: 100%;
   top: 0;
@@ -44,6 +47,7 @@ nav.sc-bdDsCe.jvubsl {
 .sc-jgzHYo.fAysoh {
   background: blue;
 }
+
 .sc-jgzHYo.fAysoh {
   background: blue;
 }
@@ -51,6 +55,7 @@ nav.sc-bdDsCe.jvubsl {
 .sc-khYboC.cisvZr {
   height: 10rem;
 }
+
 main.spectra-exchange-page {
   display: flex;
   align-items: center;
@@ -58,6 +63,7 @@ main.spectra-exchange-page {
   margin: 1% 0;
   flex-direction: column;
 }
+
 .auth {
   width: 100%;
   position: relative;
@@ -70,12 +76,15 @@ img.authimage {
   width: 200%;
   position: relative;
 }
+
 button.sc-eCQgVK.fQipuC {
   background: black;
 }
+
 button.sc-jOpzPJ.fNXlBM {
   color: black;
 }
+
 .cbOYnR {
   background: #f9ead9;
 }
@@ -85,15 +94,19 @@ button.sc-jOpzPJ.fNXlBM {
   min-height: 0;
   padding-top: 8%;
 }
+
 .gGurXo {
   min-height: 0;
 }
+
 .gGurXo {
   padding: 8%;
 }
+
 .bg-grid-overlay {
   position: relative;
 }
+
 .bg-grid-overlay::before {
   content: "";
   position: fixed;
@@ -109,21 +122,13 @@ button.sc-jOpzPJ.fNXlBM {
   z-index: 0;
   pointer-events: none;
 }
+
 .hetvjF {
   min-height: 0;
 }
 
-nav.sc-jSppWd.khDhFc {
-  border: blue 1px solid;
-  border-radius: 4rem;
-}
-div#hero-spline {
-  z-index: 9;
-}
-nav {
-  border-radius: 5rem;
-  border: blue 1px solid;
-}
+/* Clean nav styling */
+
 .sc-kmQJWH.haoOn {
   box-shadow: -9px 9px 0 7px blue;
   padding: 3% 8%;
@@ -132,12 +137,14 @@ nav {
   max-width: none;
   border-radius: 6rem;
 }
+
 .spectraai {
-    width: 50%;
-    position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 10rem;
-    box-shadow: -10px 10px 0px 3px blue;
+  margin-top: 2%;
+  width: 50%;
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 10rem;
+  box-shadow: -10px 10px 0px 3px blue;
 }
