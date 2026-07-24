@@ -65,11 +65,14 @@ const NavLink = styled(Link)`
   text-transform: uppercase;
   color: ${({ $active }) => $active ? 'var(--color-primary)' : 'var(--color-secondary)'};
   text-decoration: none;
-  border-bottom: ${({ $active }) => $active ? '1px solid var(--border-color)' : '1px solid transparent'};
-  padding-bottom: 2px;
-
+  padding: 8px 16px;
+  background: ${({ $active }) => $active ? 'var(--border-color)' : 'transparent'};
+  border-radius: 100px;
+  transition: all 0.2s;
+  
   &:hover {
     color: var(--color-primary);
+    background: var(--border-color);
   }
 `;
 
@@ -85,14 +88,17 @@ const DropdownTrigger = styled.div`
   text-transform: uppercase;
   color: ${({ $active }) => $active ? 'var(--color-primary)' : 'var(--color-secondary)'};
   cursor: pointer;
-  padding-bottom: 2px;
-  border-bottom: ${({ $active }) => $active ? '1px solid var(--border-color)' : '1px solid transparent'};
+  padding: 8px 16px;
+  border-radius: 100px;
+  background: ${({ $active }) => $active ? 'var(--border-color)' : 'transparent'};
   display: flex;
   align-items: center;
   gap: 4px;
+  transition: all 0.2s;
 
   &:hover {
     color: var(--color-primary);
+    background: var(--border-color);
   }
 `;
 
@@ -297,7 +303,7 @@ export default function FluidNav() {
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.3;
+      audioRef.current.volume = 0.1;
       audioRef.current.play().then(() => {
         setIsMuted(false);
         audioRef.current.muted = false;
@@ -388,6 +394,7 @@ export default function FluidNav() {
                     className="absolute top-full left-1/2 -translate-x-1/2 pt-5 z-50"
                     onMouseEnter={handleFlyoutEnter}
                     onMouseLeave={handleTabLeave}
+                    
                   >
                     <GhostDropdownPanel
                       tab="Products"

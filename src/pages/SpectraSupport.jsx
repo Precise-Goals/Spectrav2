@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Spline from "@splinetool/react-spline";
 import styled, { keyframes } from "styled-components";
 import { askGeneralAgent } from "../api/sarvamAgent.js";
-import { HeroDesign } from "../components/home/HeroDesign.jsx";
+import { HeroDesign } from "../components/layout/Agnt.jsx";
 import { MdMic, MdMicOff } from "react-icons/md";
 
 const Container = styled.div`
@@ -15,7 +15,7 @@ const Container = styled.div`
 
 const UIOverlay = styled.div`
   position: absolute;
-  bottom: 10%;
+  bottom: 20%;
   left: 0;
   width: 100%;
   pointer-events: none;
@@ -45,100 +45,99 @@ const MicButton = styled.button`
       : "0 0 30px rgba(var(--color-primary-rgb), 0.6)"};
 `;
 
-/* ─── Live Caption Box ────────────────────────────────────────────────────── */
-
-const captionFadeIn = keyframes`
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+const slideIn = keyframes`
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 `;
 
-const captionPulse = keyframes`
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-`;
-
-const CaptionOverlay = styled.div`
+const SidePanel = styled.div`
   position: absolute;
-  bottom: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 600px;
-  pointer-events: none;
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-`;
-
-const CaptionBox = styled.div`
-  background: rgba(10, 10, 12, 0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 300px;
+  max-height: 60%;
+  background: rgba(15, 15, 20, 0.45);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 16px 24px;
-  color: #ffffff;
-  font-family: 'Geist', sans-serif;
-  font-size: 15px;
-  line-height: 1.6;
-  text-align: center;
-  animation: ${captionFadeIn} 0.3s ease-out;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  max-width: 100%;
+  border-radius: 28px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  pointer-events: auto;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  z-index: 10;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+  }
 `;
 
-const CaptionLabel = styled.span`
-  display: block;
+const LeftPanel = styled(SidePanel)`
+  left: 20%;
+  top: 40%;
+`;
+
+const RightPanel = styled(SidePanel)`
+  right: 20%;
+  top:60%;
+`;
+
+const PanelHeader = styled.div`
   font-family: 'Geist', monospace;
   font-size: 10px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: ${(props) => props.$type === 'user' ? 'rgba(96, 165, 250, 0.8)' : props.$type === 'agent' ? 'rgba(176, 38, 255, 0.8)' : 'rgba(255,255,255,0.3)'};
-  margin-bottom: 6px;
-`;
-
-const InterimText = styled.span`
   color: rgba(255, 255, 255, 0.5);
-  font-style: italic;
+  margin-bottom: 4px;
+  text-align: ${(props) => props.$align || 'left'};
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 12px;
 `;
 
-const FinalText = styled.span`
-  color: #ffffff;
-`;
-
-const TypingDots = styled.span`
-  display: inline-block;
-  margin-left: 4px;
-  animation: ${captionPulse} 1s ease-in-out infinite;
-  color: rgba(96, 165, 250, 0.6);
+const MessageBubble = styled.div`
+  background: ${(props) => props.$role === 'user' ? 'rgba(96, 165, 250, 0.12)' : 'rgba(176, 38, 255, 0.12)'};
+  border: 1px solid ${(props) => props.$role === 'user' ? 'rgba(96, 165, 250, 0.25)' : 'rgba(176, 38, 255, 0.25)'};
+  color: rgba(255, 255, 255, 0.9);
+  padding: 14px 18px;
+  border-radius: 20px;
+  font-family: 'Geist', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  align-self: ${(props) => props.$role === 'user' ? 'flex-end' : 'flex-start'};
+  max-width: 92%;
+  animation: ${slideIn} 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(12px);
 `;
 
 export default function SpectraSupport() {
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [chatLog, setChatLog] = useState([]);
   const recognitionRef = useRef(null);
+  const leftPanelRef = useRef(null);
+  const rightPanelRef = useRef(null);
 
-  // Caption state
-  const [captionText, setCaptionText] = useState('');
-  const [captionInterim, setCaptionInterim] = useState('');
-  const [captionType, setCaptionType] = useState(''); // 'user' | 'agent' | 'processing'
-  const captionTimerRef = useRef(null);
-
-  const clearCaptionAfterDelay = useCallback((ms = 8000) => {
-    if (captionTimerRef.current) clearTimeout(captionTimerRef.current);
-    captionTimerRef.current = setTimeout(() => {
-      setCaptionText('');
-      setCaptionInterim('');
-      setCaptionType('');
-    }, ms);
-  }, []);
+  // Auto-scroll to bottom of logs
+  useEffect(() => {
+    if (leftPanelRef.current) {
+      leftPanelRef.current.scrollTop = leftPanelRef.current.scrollHeight;
+    }
+    if (rightPanelRef.current) {
+      rightPanelRef.current.scrollTop = rightPanelRef.current.scrollHeight;
+    }
+  }, [chatLog]);
 
   const speak = async (text) => {
-    // Show AI response in captions
-    setCaptionType('agent');
-    setCaptionText(text);
-    setCaptionInterim('');
-    clearCaptionAfterDelay(10000);
 
     try {
       const apiKey = import.meta.env.VITE_SARVAM_API_KEY;
@@ -216,17 +215,9 @@ export default function SpectraSupport() {
           }
         }
 
-        // Update live captions
-        if (interim) {
-          setCaptionType('user');
-          setCaptionInterim(interim);
-        }
-
         if (final) {
-          setCaptionType('user');
-          setCaptionText(final);
-          setCaptionInterim('');
           console.log("[Spectra STT] User heard:", final);
+          setChatLog(prev => [...prev, { role: 'user', text: final }]);
           setIsListening(false);
           await processInput(final);
         }
@@ -251,17 +242,14 @@ export default function SpectraSupport() {
             }
             return; // Don't stop listening state
           }
-          setCaptionText("Speech recognition disconnected (Network). If you're using Brave browser, you may need to enable Web Speech APIs, or use Chrome/Safari.");
+          console.warn("Speech recognition disconnected (Network).");
         } else if (event.error === 'not-allowed') {
-          setCaptionText("Microphone access denied. Please allow microphone permissions in your browser.");
+          console.warn("Microphone access denied. Please allow microphone permissions in your browser.");
         } else {
-          setCaptionText(`Microphone error: ${event.error}`);
+          console.warn(`Microphone error: ${event.error}`);
         }
 
         setIsListening(false);
-        setCaptionInterim('');
-        setCaptionType('processing');
-        clearCaptionAfterDelay(5000);
       };
 
       recognitionRef.current.onend = () => {
@@ -273,7 +261,6 @@ export default function SpectraSupport() {
       if (recognitionRef.current) {
         recognitionRef.current.abort();
       }
-      if (captionTimerRef.current) clearTimeout(captionTimerRef.current);
     };
   }, []);
 
@@ -282,10 +269,6 @@ export default function SpectraSupport() {
       recognitionRef.current?.stop();
     } else {
       window.speechSynthesis.cancel();
-      // Reset captions for new listening session
-      setCaptionText('');
-      setCaptionInterim('');
-      setCaptionType('user');
       recognitionRef.current?.start();
       setIsListening(true);
     }
@@ -293,15 +276,13 @@ export default function SpectraSupport() {
 
   const processInput = async (text) => {
     setIsProcessing(true);
-    setCaptionType('processing');
-    setCaptionText(text);
-    setCaptionInterim('');
     console.log("[Spectra Agent] Processing input:", text);
 
     try {
       const generalResponse = await askGeneralAgent(text);
       const responseText = generalResponse || "I'm sorry, I couldn't understand that request.";
       console.log("[Spectra Agent] AI Response:", responseText);
+      setChatLog(prev => [...prev, { role: 'agent', text: responseText }]);
       speak(responseText);
     } catch (err) {
       console.error("[Spectra Agent] Processing error:", err);
@@ -311,41 +292,34 @@ export default function SpectraSupport() {
     }
   };
 
-  const showCaption = captionText || captionInterim || isListening;
-
   return (
     <div className="spectra">
+          <div className="blue">  </div>
+          <div className="prpl">  </div>
       <Container className="bg-grid-overlay">
         <div className="spectraai">
           <HeroDesign />
         </div>
 
-        {/* Live Caption Box — below the Spline bot */}
-        {showCaption && (
-          <CaptionOverlay>
-            <CaptionBox>
-              <CaptionLabel $type={captionType}>
-                {captionType === 'user' && '🎤 You'}
-                {captionType === 'agent' && '✦ Spectra'}
-                {captionType === 'processing' && '⟳ Processing'}
-                {!captionType && isListening && '🎤 Listening'}
-              </CaptionLabel>
+        {/* Left Panel: Agent Log */}
+        <LeftPanel ref={leftPanelRef}>
+          <PanelHeader>✦ Agent Logs</PanelHeader>
+          {chatLog.filter(m => m.role === 'agent').map((m, i) => (
+            <MessageBubble key={`agent-${i}`} $role="agent">
+              {m.text}
+            </MessageBubble>
+          ))}
+        </LeftPanel>
 
-              {captionText && <FinalText>{captionText}</FinalText>}
-              {captionInterim && (
-                <InterimText>
-                  {captionText ? ' ' : ''}{captionInterim}
-                  <TypingDots>...</TypingDots>
-                </InterimText>
-              )}
-              {isListening && !captionText && !captionInterim && (
-                <InterimText>
-                  Listening<TypingDots>...</TypingDots>
-                </InterimText>
-              )}
-            </CaptionBox>
-          </CaptionOverlay>
-        )}
+        {/* Right Panel: User Log */}
+        <RightPanel ref={rightPanelRef}>
+          <PanelHeader $align="right">User Queries 🎤</PanelHeader>
+          {chatLog.filter(m => m.role === 'user').map((m, i) => (
+            <MessageBubble key={`user-${i}`} $role="user">
+              {m.text}
+            </MessageBubble>
+          ))}
+        </RightPanel>
 
         <UIOverlay>
           <MicButton

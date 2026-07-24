@@ -153,3 +153,35 @@ button.sc-jOpzPJ.fNXlBM {
   border-radius: 10rem;
   box-shadow: -10px 10px 0px 3px blue;
 }
+.spectraai {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  transform: translate(-50%, -64%);
+  box-shadow: none;
+  border-radius: 500rem;
+  overflow: hidden;
+  margin-top: 2%;
+}
+.prpl {
+  background: linear-gradient(45deg, #ab00ff, #00ffcd);
+  height: 20rem;
+  width: 20rem;
+  right: 20%;
+  position: absolute;
+  bottom: 19%;
+  filter: blur(6rem) opacity(0.5);
+  z-index: 1;
+}
+.blue {
+  background: linear-gradient(45deg, #0000ff, orange);
+  height: 20rem;
+  width: 20rem;
+  left: 20%;
+  position: absolute;
+  top: 19%;
+  filter: blur(6rem) opacity(0.5);
+  z-index: 1;
+}
