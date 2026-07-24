@@ -8,6 +8,7 @@ import { bridgeToEvm } from '../../lib/stellar/contracts/bridge';
 import { useAuth } from '../../context/AuthContext';
 import { useRateLimit } from '../../context/RateLimitContext';
 import { useError } from '../../context/ErrorContext';
+import { useNetwork } from '../../context/NetworkContext';
 import { Horizon } from '@stellar/stellar-sdk';
 
 const Card = styled.section`
@@ -402,6 +403,7 @@ export default function GlassTerminal({ onFlowStateChange }) {
   const { connectWallet, stellarPublicKey, requireWalletConnect } = useAuth();
   const { consumeRequest } = useRateLimit();
   const { showError } = useError();
+  const { isMainnet } = useNetwork();
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -542,7 +544,7 @@ export default function GlassTerminal({ onFlowStateChange }) {
 
       let result;
       if (intent.action.toLowerCase() === 'bridge') {
-        pushMessage('agent', 'Relaying bridge intent to Stellar Testnet...');
+        pushMessage('agent', `Relaying bridge intent to Stellar ${isMainnet ? 'Mainnet' : 'Testnet'}...`);
         result = await bridgeToEvm(
           stellarPublicKey,
           tokenIn,
@@ -551,7 +553,7 @@ export default function GlassTerminal({ onFlowStateChange }) {
           '0x0000000000000000000000000000000000000000'
         );
       } else {
-        pushMessage('agent', 'Relaying intent to Stellar Testnet...');
+        pushMessage('agent', `Relaying intent to Stellar ${isMainnet ? 'Mainnet' : 'Testnet'}...`);
         result = await swapTokens(
           stellarPublicKey,
           tokenIn,
@@ -564,12 +566,12 @@ export default function GlassTerminal({ onFlowStateChange }) {
       if (result && result.hash) {
         pushMessage('agent', (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ color: '#10b981', fontWeight: 'bold' }}>✅ Transaction Successful on Stellar Testnet</div>
+            <div style={{ color: '#10b981', fontWeight: 'bold' }}>✅ Transaction Successful on Stellar {isMainnet ? 'Mainnet' : 'Testnet'}</div>
             <div style={{ fontSize: '12px', opacity: 0.8 }}>
               Hash: {result.hash.slice(0,8)}...{result.hash.slice(-8)}
             </div>
             <a 
-              href={`https://stellar.expert/explorer/testnet/tx/${result.hash}`} 
+              href={`https://stellar.expert/explorer/${isMainnet ? 'public' : 'testnet'}/tx/${result.hash}`} 
               target="_blank" 
               rel="noreferrer"
               style={{ color: '#b026ff', textDecoration: 'underline', fontSize: '12px', marginTop: '4px' }}

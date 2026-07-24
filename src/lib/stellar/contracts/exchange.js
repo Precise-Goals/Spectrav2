@@ -13,13 +13,13 @@ const ISSUERS = {
 function getClassicAsset(tokenId) {
   const norm = String(tokenId).toUpperCase();
   // Symbol path (fast & correct)
-  if (norm === 'XLM' || norm === 'NATIVE') return Asset.native();
-  if (norm === 'USDC') return new Asset('USDC', ISSUERS.USDC);
-  if (norm === 'EURC') return new Asset('EURC', ISSUERS.EURC);
+  if (norm.includes('XLM') || norm.includes('NATIVE')) return Asset.native();
+  if (norm.includes('USDC')) return new Asset('USDC', ISSUERS.USDC);
+  if (norm.includes('EURC')) return new Asset('EURC', ISSUERS.EURC);
   // SAC address fallback
-  if (norm === SAC_MAP['XLM'].toUpperCase()) return Asset.native();
-  if (norm === SAC_MAP['USDC'].toUpperCase()) return new Asset('USDC', ISSUERS.USDC);
-  if (norm === SAC_MAP['EURC'].toUpperCase()) return new Asset('EURC', ISSUERS.EURC);
+  if (SAC_MAP['XLM'] && norm === SAC_MAP['XLM'].toUpperCase()) return Asset.native();
+  if (SAC_MAP['USDC'] && norm === SAC_MAP['USDC'].toUpperCase()) return new Asset('USDC', ISSUERS.USDC);
+  if (SAC_MAP['EURC'] && norm === SAC_MAP['EURC'].toUpperCase()) return new Asset('EURC', ISSUERS.EURC);
   // Ponytail: default native prevents crash but logs a warning so we notice routing bugs
   console.error(`[exchange] getClassicAsset: unknown tokenId "${tokenId}" — defaulting to native`);
   return Asset.native();
@@ -63,7 +63,9 @@ export async function swapTokens(publicKey, tokenIn, tokenOut, amountIn, minAmou
   try {
     const pathResult = await horizonServer.strictSendPaths(assetIn, sendAmount, [assetOut]).call();
     if (pathResult && pathResult.records.length > 0) {
-      swapPath = pathResult.records[0].path;
+      swapPath = pathResult.records[0].path.map(p => 
+        p.asset_type === 'native' ? Asset.native() : new Asset(p.asset_code, p.asset_issuer)
+      );
     }
   } catch (_) {
     // Ignore path discovery errors — empty path is valid for direct DEX swaps
@@ -109,7 +111,7 @@ export async function swapTokens(publicKey, tokenIn, tokenOut, amountIn, minAmou
   }
 
   // Ponytail: classic txs → Horizon submitTransaction, not Soroban sendTransaction
-  const signedTx = TransactionBuilder.fromXDR(signedXdr, networkPassphrase);
+  const signedTx = TransactionBuilder.fromXDR(signedXdr, getNetworkConfig().networkPassphrase);
   console.log(`[swap] submitting: ${sendAmount} ${assetIn.getCode ? assetIn.getCode() : 'XLM'} → ${assetOut.getCode ? assetOut.getCode() : 'XLM'}, needsTrustline=${needsTrustline}, path=${JSON.stringify(swapPath)}`);
   try {
     return await horizonServer.submitTransaction(signedTx);

@@ -1,4 +1,4 @@
-import { server, networkPassphrase, CONTRACTS } from '../lib/stellar/client';
+import { server, getNetworkConfig, CONTRACTS } from '../lib/stellar/client';
 import { signStellarTransaction } from '../lib/stellar/snap';
 import { relayGaslessTransaction } from '../lib/stellar/gaslessExecution';
 import { TransactionBuilder, Contract, Address, xdr } from '@stellar/stellar-sdk';
@@ -72,7 +72,7 @@ export async function fetchWithX402(url: string, options: RequestInit = {}, user
     const account = await server.getAccount(userPublicKey);
     const tx = new TransactionBuilder(account, {
       fee: '2000',
-      networkPassphrase,
+      networkPassphrase: getNetworkConfig().networkPassphrase,
     })
       .addOperation(operation)
       .setTimeout(30)

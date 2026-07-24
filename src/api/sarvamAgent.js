@@ -49,7 +49,7 @@ Vague/Conversational Rules:
 
 Rules:
 1. ONLY JSON.
-2. For 2 tokens, use SOURCE token.
+2. For 2 tokens (like a swap), use the DESTINATION token (e.g. swap XLM to USDC -> USDC).
 3. Normalise amounts.
 4. Schema fields only.
 5. No social media -> {"error":"Social media disabled."}`;
