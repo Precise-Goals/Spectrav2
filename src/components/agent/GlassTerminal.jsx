@@ -399,7 +399,7 @@ const ConnectWallBtn = styled.button`
 const normalizeAmount = (value) => Number(String(value || '0').replace(/,/g, '')) || 0;
 
 export default function GlassTerminal({ onFlowStateChange }) {
-  const { connectWallet, stellarPublicKey } = useAuth();
+  const { connectWallet, stellarPublicKey, requireWalletConnect } = useAuth();
   const { consumeRequest } = useRateLimit();
   const { showError } = useError();
   const [messages, setMessages] = useState([]);
@@ -520,9 +520,9 @@ export default function GlassTerminal({ onFlowStateChange }) {
   };
 
   const handleGrantPermission = async () => {
-    if (!stellarPublicKey) {
-      try { await connectWallet('stellar'); } 
-      catch (err) { showError(err.message || 'Failed to connect wallet.', 'Connection Failed'); return; }
+    if (!requireWalletConnect()) {
+      setFlowState('IDLE');
+      return;
     }
     setFlowState('CHART_REVIEW');
   };
@@ -711,17 +711,6 @@ export default function GlassTerminal({ onFlowStateChange }) {
       </SidebarCard>
     </LayoutGrid>
 
-    <ConnectWall ref={connectWallRef}>
-      <ConnectWallCard>
-        <h2>Connect Wallet to Continue</h2>
-        <ConnectWallBtn onClick={async () => {
-          try { await connectWallet('stellar'); setShowConnectWall(false); }
-          catch (err) { showError('Failed', 'Failed'); }
-        }}>
-          Connect Freighter
-        </ConnectWallBtn>
-      </ConnectWallCard>
-    </ConnectWall>
     </>
   );
 }

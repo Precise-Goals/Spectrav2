@@ -41,6 +41,14 @@ export function AuthProvider({ children }) {
 
   const isStellarConnected = !!stellarPublicKey;
 
+  const [isWalletModalOpen, setWalletModalOpen] = useState(false);
+
+  const requireWalletConnect = useCallback(() => {
+    if (isStellarConnected) return true;
+    setWalletModalOpen(true);
+    return false;
+  }, [isStellarConnected]);
+
   // Firebase Auth State Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -289,7 +297,10 @@ export function AuthProvider({ children }) {
     upgradeTier,
     cancelTier,
     stellarPublicKey,
-    isStellarConnected
+    isStellarConnected,
+    isWalletModalOpen,
+    setWalletModalOpen,
+    requireWalletConnect
   };
 
   return (

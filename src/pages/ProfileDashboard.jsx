@@ -240,7 +240,7 @@ const LogItem = ({ icon, title, sub, time }) => (
 /* ─── Component ───────────────────────────────────────────────────────────── */
 
 export default function ProfileDashboard() {
-  const { currentUser, connectWallet, stellarPublicKey, isStellarConnected, fetchProfileAndTier } = useAuth();
+  const { currentUser, connectWallet, stellarPublicKey, isStellarConnected, fetchProfileAndTier, requireWalletConnect } = useAuth();
   const { showError } = useError();
   const { getUsage } = useRateLimit();
   const navigate = useNavigate();
@@ -251,7 +251,6 @@ export default function ProfileDashboard() {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
-  const [showConnectModal, setShowConnectModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -316,6 +315,7 @@ export default function ProfileDashboard() {
         setIsEditing(false);
         if (fetchProfileAndTier) await fetchProfileAndTier(stellarPublicKey, true);
       } else {
+        requireWalletConnect();
         throw new Error('Please connect your Freighter wallet to save your profile.');
       }
     } catch (err) {
@@ -339,17 +339,18 @@ export default function ProfileDashboard() {
         <CyberCard style={{ height: '100%' }}>
           <Flex justify="space-between" align="center" mb="40px">
             <Badge>IDENTITY</Badge>
-            {!account ? (
-              <SolidButton p="6px 16px" onClick={() => setShowConnectModal(true)}>
-                CONNECT FREIGHTER
-              </SolidButton>
-            ) : (
-              !isEditing && !loading && (
+            <Flex gap="12px" align="center">
+              {!isEditing && !loading && (
                 <OutlineButton onClick={() => setIsEditing(true)}>
                   <Edit2 size={12} /> EDIT
                 </OutlineButton>
-              )
-            )}
+              )}
+              {!account && (
+                <SolidButton p="6px 16px" onClick={() => requireWalletConnect()}>
+                  CONNECT FREIGHTER
+                </SolidButton>
+              )}
+            </Flex>
           </Flex>
 
           {isEditing ? (
@@ -497,48 +498,6 @@ export default function ProfileDashboard() {
         </Flex>
 
       </Grid>
-
-      {/* ── Connect Modal ── */}
-      {showConnectModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0, 0, 20, 0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: '440px', margin: '0 24px' }}>
-            {/* The white offset block */}
-            <div style={{ position: 'absolute', inset: 0, background: '#fff', transform: 'translate(-12px, 12px)', zIndex: 0 }}></div>
-            
-            {/* The main block */}
-            <div style={{ position: 'relative', background: '#050505', border: '1px solid #1D4ED8', padding: '48px 32px', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <button 
-                onClick={() => setShowConnectModal(false)} 
-                style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: '#1D4ED8', cursor: 'pointer', padding: 0 }}
-              >
-                <X size={20} />
-              </button>
-              
-              <Text size="42px" weight="800" sans upper center mb="16px" style={{ letterSpacing: '0.02em', color: '#fff' }}>LOGIN.</Text>
-              
-              <Text color="#9CA3AF" size="14px" mb="40px" center lh="1.6">
-                Select your preferred network engine to authenticate.
-              </Text>
-              
-              <Flex col gap="16px" w="100%">
-                <SolidButton full onClick={async () => {
-                  try { 
-                    await connectWallet('stellar'); 
-                    setShowConnectModal(false); 
-                  } catch(err) { 
-                    showError(err.message || 'Failed to connect Freighter.'); 
-                  }
-                }}>
-                  <Flex align="center" justify="center" gap="12px">
-                    <Hexagon size={18} />
-                    Connect Freighter
-                  </Flex>
-                </SolidButton>
-              </Flex>
-            </div>
-          </div>
-        </div>
-      )}
     </Container>
   );
 }

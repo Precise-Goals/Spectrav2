@@ -25,7 +25,7 @@ export default function SwapBox({
   onPayAssetChange,
   onTxHashChange,
 }) {
-  const { connectWallet, stellarPublicKey } = useAuth();
+  const { connectWallet, stellarPublicKey, requireWalletConnect } = useAuth();
   const { showError } = useError();
   const account = stellarPublicKey;
   const [paymentTokenBalance, setPaymentTokenBalance] = useState(ZERO);
@@ -148,12 +148,9 @@ export default function SwapBox({
       }
 
       let currentAccount = account;
-      if (!currentAccount) {
-        currentAccount = await connectWallet('stellar');
-      }
-      
-      if (!currentAccount) {
-        throw new Error("No Freighter wallet connected.");
+      if (!requireWalletConnect()) {
+        setIsExecutingState(false);
+        return;
       }
 
       // Pass symbols directly — getClassicAsset resolves XLM/USDC/EURC without SAC confusion

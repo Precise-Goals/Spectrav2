@@ -19,6 +19,7 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SpectraSupport = lazy(() => import('./pages/SpectraSupport'));
 
 import RequireAuth from './components/layout/RequireAuth';
+import ConnectWalletModal from './components/ui/ConnectWalletModal';
 
 const LoaderWrap = styled.div`
   height: 100vh;
@@ -48,6 +49,7 @@ export default function App() {
   return (
     <MainLayout>
       <ScrollToTop />
+      <ConnectWalletModal />
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public Routes */}
