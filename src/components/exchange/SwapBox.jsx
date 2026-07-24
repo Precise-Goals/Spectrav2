@@ -9,7 +9,7 @@ import { Horizon } from '@stellar/stellar-sdk';
 
 export const ASSET_OPTIONS = [
   { id: 'XLM', label: 'Stellar Lumens', tokenAddress: 'native', symbol: 'XLM', decimals: 7 },
-  { id: 'USDC', label: 'USDC (Testnet)', tokenAddress: resolveSacAddress('USDC'), symbol: 'USDC', decimals: 7 },
+  { id: 'USDC', label: 'USDC', tokenAddress: resolveSacAddress('USDC'), symbol: 'USDC', decimals: 7 },
   { id: 'EURC', label: 'Euro Coin', tokenAddress: resolveSacAddress('EURC'), symbol: 'EURC', decimals: 7 },
 ];
 
@@ -66,9 +66,11 @@ export default function SwapBox({
         if (activeAssetCode === "XLM") {
           balanceObj = acc.balances.find(b => b.asset_type === 'native');
         } else if (activeAssetCode === "USDC") {
+          const defaultIssuer = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+          const usdcIssuer = import.meta.env.VITE_USDC_ISSUER || defaultIssuer;
           balanceObj = acc.balances.find(b => 
             b.asset_code === "USDC" && 
-            b.asset_issuer === "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5"
+            b.asset_issuer === usdcIssuer
           );
         } else {
           balanceObj = acc.balances.find(b => b.asset_code === activeAssetCode);

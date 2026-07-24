@@ -5,10 +5,12 @@ export const CONTRACT_ADDRESSES = {
   SPECTRA_PROFILE: import.meta.env.VITE_PROFILE_CONTRACT_ID || 'CAIVPYSHCJTMYFOCLLNJXY33377SWJLEIIYQY53UFSU6HJDTEVMATCIJ',
 };
 
+import { getNetworkConfig } from '../lib/stellar/client';
+
 export const NETWORK_INFO = {
-  name: 'Stellar Testnet',
-  network: 'TESTNET',
-  rpcUrl: import.meta.env.VITE_STELLAR_RPC_URL || 'https://stellar-soroban-testnet-public.nodies.app',
+  get name() { return getNetworkConfig().isMainnet ? 'Stellar Mainnet' : 'Stellar Testnet'; },
+  get network() { return getNetworkConfig().networkString; },
+  get rpcUrl() { return getNetworkConfig().rpcUrl; }
 };
 
 export const SAC_MAP = {

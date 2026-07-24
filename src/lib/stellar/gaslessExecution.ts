@@ -1,6 +1,6 @@
 import { Keypair, TransactionBuilder, rpc, Networks, Transaction } from '@stellar/stellar-sdk';
 import process from 'process';
-import { server, networkPassphrase } from './client';
+import { server, getNetworkConfig } from './client';
 
 // Ponytail: Gasless relayer utilizing Stellar's native Fee-Bump transactions.
 // Avoids heavy custom relayer frameworks; relies purely on CAP-0015 (Fee-Bumps).
@@ -27,8 +27,10 @@ export async function relayGaslessTransaction(signedXdr: string): Promise<Gasles
   // 1. Initialize Treasury Keypair
   const treasuryKeypair = Keypair.fromSecret(secret);
 
+  const config = getNetworkConfig();
+
   // 2. Decode the inner transaction signed by the user
-  const innerTransaction = TransactionBuilder.fromXDR(signedXdr, networkPassphrase);
+  const innerTransaction = TransactionBuilder.fromXDR(signedXdr, config.networkPassphrase);
 
   // 3. Define the sponsored base fee (in stroops)
   // Soroban txs require a slightly higher base fee to cover resource limits
@@ -41,7 +43,7 @@ export async function relayGaslessTransaction(signedXdr: string): Promise<Gasles
     treasuryKeypair,
     baseFee,
     innerTransaction as Transaction,
-    networkPassphrase
+    config.networkPassphrase
   );
 
   // 5. Sign the outer fee-bump envelope with treasury account key

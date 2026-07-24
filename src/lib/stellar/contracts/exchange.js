@@ -1,11 +1,11 @@
 import { Asset, Operation, TransactionBuilder, Horizon } from '@stellar/stellar-sdk';
-import { server, networkPassphrase } from '../client';
+import { server, getNetworkConfig } from '../client';
 import { signTransaction as signFreighterTransaction } from '@stellar/freighter-api';
 import { SAC_MAP } from '../../../config/contracts';
 
-// Issuer addresses for Stellar Testnet classic assets
-const TESTNET_ISSUERS = {
-  USDC: 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
+// Issuer addresses for Stellar Classic assets
+const ISSUERS = {
+  USDC: import.meta.env.VITE_USDC_ISSUER || 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5',
   EURC: 'GB3Q6QDZYTHWT7E5PVS3W7FUT5GVAFC5KSZFFLPU25GO7VTC3NM2ZTVO',
 };
 
@@ -14,12 +14,12 @@ function getClassicAsset(tokenId) {
   const norm = String(tokenId).toUpperCase();
   // Symbol path (fast & correct)
   if (norm === 'XLM' || norm === 'NATIVE') return Asset.native();
-  if (norm === 'USDC') return new Asset('USDC', TESTNET_ISSUERS.USDC);
-  if (norm === 'EURC') return new Asset('EURC', TESTNET_ISSUERS.EURC);
+  if (norm === 'USDC') return new Asset('USDC', ISSUERS.USDC);
+  if (norm === 'EURC') return new Asset('EURC', ISSUERS.EURC);
   // SAC address fallback
   if (norm === SAC_MAP['XLM'].toUpperCase()) return Asset.native();
-  if (norm === SAC_MAP['USDC'].toUpperCase()) return new Asset('USDC', TESTNET_ISSUERS.USDC);
-  if (norm === SAC_MAP['EURC'].toUpperCase()) return new Asset('EURC', TESTNET_ISSUERS.EURC);
+  if (norm === SAC_MAP['USDC'].toUpperCase()) return new Asset('USDC', ISSUERS.USDC);
+  if (norm === SAC_MAP['EURC'].toUpperCase()) return new Asset('EURC', ISSUERS.EURC);
   // Ponytail: default native prevents crash but logs a warning so we notice routing bugs
   console.error(`[exchange] getClassicAsset: unknown tokenId "${tokenId}" — defaulting to native`);
   return Asset.native();
@@ -71,7 +71,7 @@ export async function swapTokens(publicKey, tokenIn, tokenOut, amountIn, minAmou
 
   const txBuilder = new TransactionBuilder(account, {
     fee: '10000',
-    networkPassphrase,
+    networkPassphrase: getNetworkConfig().networkPassphrase,
   });
 
   // Op 1 (conditional): open trustline for the receive asset
@@ -94,8 +94,8 @@ export async function swapTokens(publicKey, tokenIn, tokenOut, amountIn, minAmou
   const tx = txBuilder.setTimeout(60).build();
 
   const response = await signFreighterTransaction(tx.toXDR(), {
-    network: 'TESTNET',
-    networkPassphrase,
+    network: getNetworkConfig().networkString,
+    networkPassphrase: getNetworkConfig().networkPassphrase,
   });
 
   let signedXdr;

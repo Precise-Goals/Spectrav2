@@ -28,7 +28,9 @@ export async function getTokenBalance(tokenAddress, userPublicKey) {
     // For other Classic Assets, we match the asset_code and asset_issuer
     const balance = account.balances.find(b => {
       if (tokenAddress === "USDC" || tokenAddress === import.meta.env.VITE_STELLAR_SAC_USDC) {
-        return b.asset_code === "USDC" && b.asset_issuer === "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
+        const defaultIssuer = 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5';
+        const usdcIssuer = import.meta.env.VITE_USDC_ISSUER || defaultIssuer;
+        return b.asset_code === "USDC" && b.asset_issuer === usdcIssuer;
       }
       return b.asset_code === tokenAddress;
     });

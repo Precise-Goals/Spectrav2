@@ -5,6 +5,7 @@ import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
+import { useNetwork } from '../../context/NetworkContext';
 
 /* ─── Original Styled Components ─────────────────────────────────────────── */
 
@@ -146,6 +147,38 @@ const AuthButton = styled.button`
 
   &:hover {
     color: ${({ $isGhost }) => $isGhost ? '#ef4444' : 'var(--color-primary)'};
+  }
+`;
+
+const NetworkToggle = styled.button`
+  background: ${({ $isMainnet }) => $isMainnet ? 'rgba(34, 197, 94, 0.1)' : 'rgba(249, 115, 22, 0.1)'};
+  border: 1px solid ${({ $isMainnet }) => $isMainnet ? 'rgba(34, 197, 94, 0.2)' : 'rgba(249, 115, 22, 0.2)'};
+  color: ${({ $isMainnet }) => $isMainnet ? '#4ade80' : '#fb923c'};
+  font-family: 'Geist', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 100px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: ${({ $isMainnet }) => $isMainnet ? 'rgba(34, 197, 94, 0.2)' : 'rgba(249, 115, 22, 0.2)'};
+  }
+
+  &::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: ${({ $isMainnet }) => $isMainnet ? '#4ade80' : '#fb923c'};
+    box-shadow: 0 0 8px ${({ $isMainnet }) => $isMainnet ? '#4ade80' : '#fb923c'};
   }
 `;
 
@@ -293,6 +326,7 @@ export default function FluidNav() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isLoggedIn, disconnectWallet } = useAuth();
+  const { network, isMainnet, toggleNetwork } = useNetwork();
 
   const [activeTab, setActiveTab] = useState(null);
   const [hoveredIdx, setHoveredIdx] = useState(0);
@@ -442,6 +476,14 @@ export default function FluidNav() {
           </NavLinks>
 
           <NavRight>
+            <NetworkToggle 
+              $isMainnet={isMainnet} 
+              onClick={toggleNetwork}
+              title={`Switch to ${isMainnet ? 'Testnet' : 'Mainnet'}`}
+            >
+              {network}
+            </NetworkToggle>
+
             <audio ref={audioRef} src="/aud.mp3" loop />
             <button 
               onClick={toggleMute} 

@@ -1,9 +1,10 @@
 import { TransactionBuilder, Asset, Operation, Networks, Keypair, Horizon } from '@stellar/stellar-sdk';
 
+import { getNetworkConfig } from '../lib/stellar/client';
+
 const getHorizonConfig = () => {
-  const horizonUrl = import.meta.env.VITE_STELLAR_HORIZON_URL || "https://horizon-testnet.stellar.org";
-  const passphrase = import.meta.env.VITE_STELLAR_NETWORK_PASSPHRASE || Networks.TESTNET;
-  return { horizonUrl, passphrase };
+  const config = getNetworkConfig();
+  return { horizonUrl: config.horizonUrl, passphrase: config.networkPassphrase };
 };
 
 // Tier prices in XLM — must match MintConsole.jsx TIERS config

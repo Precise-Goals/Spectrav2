@@ -1,19 +1,48 @@
 import { rpc, Networks, TransactionBuilder, Contract, Keypair } from '@stellar/stellar-sdk';
 import { signTransaction as signFreighterTransaction } from '@stellar/freighter-api';
 import { relayGaslessTransaction } from './gaslessExecution';
-const RPC_URL = import.meta.env.VITE_STELLAR_RPC_URL || 'https://stellar-soroban-testnet-public.nodies.app';
-export const networkPassphrase = Networks.TESTNET; // Ponytail: Strictly locked to Testnet environment
 
-export const server = new rpc.Server(RPC_URL, { allowHttp: true });
+export function getNetworkConfig() {
+  const isMainnet = localStorage.getItem('spectra_preferred_network') === 'mainnet';
+  
+  return {
+    isMainnet,
+    rpcUrl: isMainnet ? 'https://mainnet.sorobanrpc.com' : (import.meta.env.VITE_STELLAR_RPC_URL || 'https://stellar-soroban-testnet-public.nodies.app'),
+    horizonUrl: isMainnet ? 'https://horizon.stellar.org' : (import.meta.env.VITE_STELLAR_HORIZON_URL || 'https://horizon-testnet.stellar.org'),
+    networkPassphrase: isMainnet ? Networks.PUBLIC : Networks.TESTNET,
+    networkString: isMainnet ? 'PUBLIC' : 'TESTNET'
+  };
+}
+
+export function getContractId(name) {
+  const isMainnet = localStorage.getItem('spectra_preferred_network') === 'mainnet';
+  if (isMainnet) {
+    return import.meta.env[`VITE_${name}_CONTRACT_ID_MAINNET`] || import.meta.env[`VITE_${name}_CONTRACT_ID`];
+  }
+  return import.meta.env[`VITE_${name}_CONTRACT_ID`];
+}
 
 export const CONTRACTS = {
-  SAAS:     import.meta.env.VITE_SAAS_CONTRACT_ID,
-  PROFILE:  import.meta.env.VITE_PROFILE_CONTRACT_ID,
-  EXCHANGE: import.meta.env.VITE_EXCHANGE_CONTRACT_ID,
-  NFT:      import.meta.env.VITE_NFT_CONTRACT_ID,
-  FEEDBACK: import.meta.env.VITE_STELLAR_FEEDBACK_CONTRACT,
-  BRIDGE:   import.meta.env.VITE_STELLAR_BRIDGE_CONTRACT,
+  get SAAS()     { return getContractId('SAAS'); },
+  get PROFILE()  { return getContractId('PROFILE'); },
+  get EXCHANGE() { return getContractId('EXCHANGE'); },
+  get NFT()      { return getContractId('NFT'); },
+  get FEEDBACK() { return getContractId('STELLAR_FEEDBACK'); },
+  get BRIDGE()   { return getContractId('STELLAR_BRIDGE'); },
 };
+
+let _serverInstance = null;
+let _serverRpcUrl = null;
+export const server = new Proxy({}, {
+  get(target, prop) {
+    const rpcUrl = getNetworkConfig().rpcUrl;
+    if (!_serverInstance || _serverRpcUrl !== rpcUrl) {
+      _serverInstance = new rpc.Server(rpcUrl, { allowHttp: true });
+      _serverRpcUrl = rpcUrl;
+    }
+    return _serverInstance[prop];
+  }
+});
 
 // ─── Simple read-cache: avoid repeat RPC for same key within 60s ──────────────
 const _readCache = new Map();
@@ -45,6 +74,9 @@ export async function invokeContract(contractId, method, args, publicKey) {
     account = await server.getAccount(publicKey);
   } catch (err) {
     if (err?.response?.status === 404) {
+      if (getNetworkConfig().isMainnet) {
+        throw new Error('Account not found on Mainnet. Please fund it with XLM first.');
+      }
       console.warn('[Stellar] Account not found. Auto-funding via Friendbot...');
       await fetch(`https://horizon-testnet.stellar.org/friendbot?addr=${publicKey}`);
       // Retry fetching account
@@ -54,10 +86,11 @@ export async function invokeContract(contractId, method, args, publicKey) {
     }
   }
 
-  // 2. Build the transaction (Hard-locked to TESTNET)
+  // 2. Build the transaction
+  const config = getNetworkConfig();
   let tx = new TransactionBuilder(account, {
     fee: '1000',
-    networkPassphrase, // Strictly Networks.TESTNET
+    networkPassphrase: config.networkPassphrase,
   })
     .addOperation(operation)
     .setTimeout(30)
@@ -79,8 +112,8 @@ export async function invokeContract(contractId, method, args, publicKey) {
   
   // CRITICAL FIX: Freighter requires explicit network properties to prevent Mainnet fallback
   const response = await signFreighterTransaction(xdrStr, { 
-    network: 'TESTNET',
-    networkPassphrase: networkPassphrase 
+    network: config.networkString,
+    networkPassphrase: config.networkPassphrase 
   });
   
   if (typeof response === 'string') {
@@ -139,7 +172,8 @@ export async function readContract(contractId, method, args, _publicKey) {
     incrementSequenceNumber: () => {},
   };
 
-  const tx = new TransactionBuilder(fakeAccount, { fee: '100', networkPassphrase })
+  const config = getNetworkConfig();
+  const tx = new TransactionBuilder(fakeAccount, { fee: '100', networkPassphrase: config.networkPassphrase })
     .addOperation(operation)
     .setTimeout(30)
     .build();

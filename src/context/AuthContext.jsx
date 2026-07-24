@@ -16,11 +16,13 @@ import {
   onAuthStateChanged 
 } from '../lib/firebase';
 import { saveUserProfile } from '../lib/firestoreProfile';
+import { useNetwork } from './NetworkContext';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
+  const { isMainnet, horizonUrl: currentHorizonUrl, networkPassphrase } = useNetwork();
 
   // --- Firebase User State ---
   const [currentUser, setCurrentUser] = useState(null);
@@ -90,7 +92,7 @@ export function AuthProvider({ children }) {
     } finally {
       setIsLoadingProfile(false);
     }
-  }, []);
+  }, [isMainnet]); // Re-fetch or depend on network change if needed
 
   // Firebase Auth Actions
   const loginWithEmail = useCallback(async (email, password) => {
@@ -203,9 +205,8 @@ export function AuthProvider({ children }) {
 
       if (pubKey) {
         try {
-          const horizonUrl = import.meta.env.VITE_STELLAR_HORIZON_URL || "https://horizon-testnet.stellar.org";
-          const res = await fetch(`${horizonUrl}/accounts/${pubKey}`);
-          if (res.status === 404) {
+          const res = await fetch(`${currentHorizonUrl}/accounts/${pubKey}`);
+          if (res.status === 404 && !isMainnet) {
             await fetch(`https://friendbot.stellar.org/?addr=${pubKey}`);
           }
         } catch (e) { console.warn('Friendbot skip error:', e); }
@@ -245,8 +246,8 @@ export function AuthProvider({ children }) {
     let signedXdr;
     try {
       const response = await signTransaction(xdr, { 
-        network: 'TESTNET',
-        networkPassphrase: import.meta.env.VITE_STELLAR_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015'
+        network: isMainnet ? 'PUBLIC' : 'TESTNET',
+        networkPassphrase
       });
       if (typeof response === 'string') {
         signedXdr = response;
@@ -271,8 +272,8 @@ export function AuthProvider({ children }) {
     let signedXdr;
     try {
       const response = await signTransaction(xdr, { 
-        network: 'TESTNET',
-        networkPassphrase: import.meta.env.VITE_STELLAR_NETWORK_PASSPHRASE || 'Test SDF Network ; September 2015'
+        network: isMainnet ? 'PUBLIC' : 'TESTNET',
+        networkPassphrase
       });
       if (typeof response === 'string') signedXdr = response;
       else if (response && typeof response === 'object') {
@@ -284,9 +285,8 @@ export function AuthProvider({ children }) {
       throw new Error(`User rejected signature or error: ${e.message || e}`);
     }
     
-    const horizonUrl = import.meta.env.VITE_STELLAR_HORIZON_URL || "https://horizon-testnet.stellar.org";
-    const server = new Horizon.Server(horizonUrl);
-    const tx = TransactionBuilder.fromXDR(signedXdr, import.meta.env.VITE_STELLAR_NETWORK_PASSPHRASE || Networks.TESTNET);
+    const server = new Horizon.Server(currentHorizonUrl);
+    const tx = TransactionBuilder.fromXDR(signedXdr, networkPassphrase);
     const result = await server.submitTransaction(tx);
     
     await fetchProfileAndTier(stellarPublicKey);

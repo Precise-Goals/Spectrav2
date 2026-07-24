@@ -464,7 +464,7 @@ export default function Onboarding() {
           uid: currentUser.uid,
           email: email || currentUser.email,
           displayName: name || currentUser.displayName,
-          photoURL: currentUser.photoURL,
+          photoURL: currentUser.photoURL || null,
           walletAddress: stellarPublicKey || null,
           onboarding: onboardingData,
           profile: { name, email, bio, phone, avatarId },

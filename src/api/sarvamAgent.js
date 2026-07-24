@@ -26,7 +26,7 @@ const SARVAM_CHAT_ENDPOINT = `${SARVAM_API_BASE}/v1/chat/completions`;
 const SARVAM_MODEL = "sarvam-30b";
 
 /** Maximum time (ms) to wait for a single API attempt before aborting. */
-const REQUEST_TIMEOUT_MS = 15_000;
+const REQUEST_TIMEOUT_MS = 35_000;
 
 /** Number of additional retry attempts after the first failure. */
 const MAX_RETRIES = 2;
@@ -189,7 +189,7 @@ async function callSarvamApi(userPrompt, apiKey, context = "") {
           { role: "user", content: userPrompt },
         ],
         temperature: 0.1,   // Keep determinism high for structured output
-        max_tokens: 1024,
+        max_tokens: 4096,
         response_format: { type: "json_object" }, // Request JSON mode when supported
       }),
     });
@@ -233,11 +233,15 @@ async function callSarvamApi(userPrompt, apiKey, context = "") {
   }
 
   const data = await response.json();
+  if (data.error) {
+    throw new Error(`[SarvamAgent] API Error: ${data.error.message || JSON.stringify(data.error)}`);
+  }
+
   const content = data?.choices?.[0]?.message?.content;
 
   if (!content) {
     throw new Error(
-      "[SarvamAgent] Unexpected API response shape — no content in choices[0].message"
+      `[SarvamAgent] Unexpected API response shape: ${JSON.stringify(data)}`
     );
   }
 
