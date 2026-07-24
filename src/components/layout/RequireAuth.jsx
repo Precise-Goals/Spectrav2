@@ -34,9 +34,11 @@ export default function RequireAuth({ children }) {
     return <LoaderWrap>FETCHING_PROFILE_DATA...</LoaderWrap>;
   }
 
-  if (!profile.exists && location.pathname !== '/profile') {
-    // If they have no profile, force them to the profile page in onboarding mode
-    return <Navigate to="/profile?mode=onboarding" replace />;
+  const hasOnboarded = !!localStorage.getItem('spectra_onboarding');
+
+  if (!profile.exists && !hasOnboarded && location.pathname !== '/profile' && location.pathname !== '/onboarding') {
+    // If they have no profile and haven't onboarded, force them to the new onboarding flow
+    return <Navigate to="/onboarding" replace />;
   }
 
   return children;

@@ -54,7 +54,7 @@ export default function MintConsole() {
   const [userTier, setUserTier] = useState(-1);
   const [ownedTokenId, setOwnedTokenId] = useState(0);
   
-  const { connectWallet, stellarPublicKey, isStellarConnected, upgradeTier, cancelTier } = useAuth();
+  const { stellarPublicKey, isStellarConnected, upgradeTier, cancelTier, requireWalletConnect } = useAuth();
   const account = stellarPublicKey;
 
   const activeTier = useMemo(() => TIERS.find((tier) => tier.id === selectedTier) || TIERS[2], [selectedTier]);
@@ -99,17 +99,7 @@ export default function MintConsole() {
     }
   };
 
-  const connectWalletLocal = async () => {
-    try {
-      const stellarAddr = await connectWallet('stellar');
-      if (stellarAddr) {
-        await fetchBalances(stellarAddr);
-        return stellarAddr;
-      }
-    } catch (e) {
-      throw new Error('No Freighter wallet found or connection denied.');
-    }
-  };
+
 
   useEffect(() => {
     if (account) {
@@ -147,10 +137,10 @@ export default function MintConsole() {
         throw new Error('Alpha tier is read-only and cannot mint a subscription badge.');
       }
 
-      setStatus('CONNECTING');
-      let currentAccount = account;
-      if (!currentAccount) {
-        currentAccount = await connectWalletLocal();
+      if (!requireWalletConnect()) {
+        setIsMinting(false);
+        setStatus('IDLE');
+        return;
       }
       
       setStatus('MINTING_BADGE');
@@ -188,8 +178,10 @@ export default function MintConsole() {
 
     try {
       let currentAccount = account;
-      if (!currentAccount) {
-        currentAccount = await connectWalletLocal();
+      if (!requireWalletConnect()) {
+        setIsMinting(false);
+        setStatus('IDLE');
+        return;
       }
       
       // Always attempt burn — use activeTier.id to determine which asset to burn back

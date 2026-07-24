@@ -123,6 +123,11 @@ button.sc-jOpzPJ.fNXlBM {
   pointer-events: none;
 }
 
+.bg-grid-overlay > * {
+  position: relative;
+  z-index: 1;
+}
+
 .hetvjF {
   min-height: 0;
 }

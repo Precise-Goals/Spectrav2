@@ -46,7 +46,7 @@ export default function AgentTerminal() {
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [voiceLanguage, setVoiceLanguage] = useState('en-US');
   
-  const { connectWallet, stellarPublicKey } = useAuth();
+  const { connectWallet, stellarPublicKey, requireWalletConnect } = useAuth();
 
   const getDetailedResponse = (intentObj) => {
     if (!intentObj) return "";
@@ -134,8 +134,10 @@ export default function AgentTerminal() {
 
     try {
       let currentAccount = stellarPublicKey;
-      if (!currentAccount) {
-        currentAccount = await connectWallet('stellar');
+      if (!requireWalletConnect()) {
+        setIsExecutingState(false);
+        setStatus('IDLE');
+        return;
       }
 
       // Pass symbols directly — getClassicAsset resolves by symbol (XLM/USDC/EURC)

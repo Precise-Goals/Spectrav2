@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled from 'styled-components';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ChevronDown, ArrowUpRight, Menu, X } from 'lucide-react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import WalletSelectorModal from './auth/WalletSelectorModal';
 
 /* ─── Styled Components for Nav Shell ────────────────────────────────────── */
 
@@ -400,13 +399,12 @@ export default function Navbar() {
   const location = useLocation();
   const {
     isLoggedIn,
-    disconnectWallet
+    logout
   } = useAuth();
 
   const [activeTab, setActiveTab] = useState(null);
   const [hoveredIdx, setHoveredIdx] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const timeoutRef = useRef(null);
 
   const [isMuted, setIsMuted] = useState(true);
@@ -463,7 +461,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
-    disconnectWallet();
+    logout();
   };
 
   const userData = { avatarId: 1 };
@@ -472,7 +470,7 @@ export default function Navbar() {
     if (isLoggedIn) {
       navigate('/profile');
     } else {
-      setIsWalletModalOpen(true);
+      navigate('/login');
     }
   };
 
@@ -542,7 +540,8 @@ export default function Navbar() {
               {activeTab && (
                 <div
                   key={activeTab}
-                  className="absolute top-full pt-3 z-50"
+                  className="absolute z-50"
+                  style={{ top: 'calc(100% + 32px)' }}
                   onMouseEnter={handleFlyoutEnter}
                   onMouseLeave={handleTabLeave}
                 >
@@ -588,7 +587,7 @@ export default function Navbar() {
                 <AuthButton onClick={handleLogout}>Sign Out</AuthButton>
               </>
             ) : (
-              <AuthButton onClick={() => setIsWalletModalOpen(true)}>Connect</AuthButton>
+              <AuthButton onClick={() => navigate('/login')}>Login</AuthButton>
             )}
 
             {/* Mobile Hamburger Toggle */}
@@ -622,19 +621,13 @@ export default function Navbar() {
                 {isLoggedIn ? (
                   <AuthButton onClick={handleLogout}>Sign Out</AuthButton>
                 ) : (
-                  <AuthButton onClick={() => { setMobileMenuOpen(false); setIsWalletModalOpen(true); }}>Connect</AuthButton>
+                  <AuthButton onClick={() => { setMobileMenuOpen(false); navigate('/login'); }}>Login</AuthButton>
                 )}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Wallet Selector Modal */}
-      <WalletSelectorModal 
-        isOpen={isWalletModalOpen} 
-        onClose={() => setIsWalletModalOpen(false)} 
-      />
     </>
   );
 }

@@ -15,9 +15,12 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const Profile  = lazy(() => import('./pages/ProfileDashboard'));
 const LegalPage = lazy(() => import('./pages/LegalPage'));
 const Login    = lazy(() => import('./pages/Login'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SpectraSupport = lazy(() => import('./pages/SpectraSupport'));
+const Guide      = lazy(() => import('./pages/Guide'));
 
 import RequireAuth from './components/layout/RequireAuth';
+import ConnectWalletModal from './components/ui/ConnectWalletModal';
 
 const LoaderWrap = styled.div`
   height: 100vh;
@@ -47,6 +50,7 @@ export default function App() {
   return (
     <MainLayout>
       <ScrollToTop />
+      <ConnectWalletModal />
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public Routes */}
@@ -54,6 +58,7 @@ export default function App() {
           <Route path="/about"    element={<About />}    />
           <Route path="/exchange" element={<Exchange />} />
           <Route path="/journal"  element={<Journal />}  />
+          <Route path="/guide"    element={<Guide />}    />
           
           {/* Secret Admin Routes */}
           <Route path={`/${import.meta.env.VITE_ADMIN_URL}`} element={<AdminLogin />} />
@@ -65,6 +70,7 @@ export default function App() {
           <Route path="/spectra"  element={<SpectraSupport />} />
 
           {/* Protected Routes */}
+          <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
           <Route path="/agent" element={<RequireAuth><Agent /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/mint" element={<RequireAuth><Mint /></RequireAuth>} />

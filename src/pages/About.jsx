@@ -139,7 +139,7 @@ const StickyTitle = styled.h2`
   letter-spacing: -0.02em;
   color: var(--color-primary);
   position: sticky;
-  top: 96px;
+  top: 160px;
 `;
 
 const ContentCol = styled.div`
