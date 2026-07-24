@@ -15,6 +15,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const Profile  = lazy(() => import('./pages/ProfileDashboard'));
 const LegalPage = lazy(() => import('./pages/LegalPage'));
 const Login    = lazy(() => import('./pages/Login'));
+const Onboarding = lazy(() => import('./pages/Onboarding'));
 const SpectraSupport = lazy(() => import('./pages/SpectraSupport'));
 
 import RequireAuth from './components/layout/RequireAuth';
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/spectra"  element={<SpectraSupport />} />
 
           {/* Protected Routes */}
+          <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
           <Route path="/agent" element={<RequireAuth><Agent /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/mint" element={<RequireAuth><Mint /></RequireAuth>} />

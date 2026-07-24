@@ -4,7 +4,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { FaVolumeMute, FaVolumeUp } from 'react-icons/fa';
-import WalletSelectorModal from '../auth/WalletSelectorModal';
 import { useAuth } from '../../context/AuthContext';
 
 /* ─── Original Styled Components ─────────────────────────────────────────── */
@@ -465,16 +464,11 @@ export default function FluidNav() {
                 <AuthButton onClick={handleLogout}>Sign Out</AuthButton>
               </>
             ) : (
-              <AuthButton onClick={() => setIsModalOpen(true)}>Connect</AuthButton>
+              <AuthButton onClick={() => navigate('/login')}>Login</AuthButton>
             )}
           </NavRight>
         </NavInner>
       </NavWrap>
-
-      <WalletSelectorModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-      />
     </>
   );
 }

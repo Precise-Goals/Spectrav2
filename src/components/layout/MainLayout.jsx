@@ -16,13 +16,18 @@ const PageContent = styled.main`
   flex-direction: column;
 `;
 
+import { useLocation } from 'react-router-dom';
+
 export default function MainLayout({ children }) {
+  const location = useLocation();
+  const hideNavFooter = location.pathname === '/onboarding';
+
   return (
     <Shell>
-      <div className="scroll-progress-bar" />
-      <Navbar />
+      {!hideNavFooter && <div className="scroll-progress-bar" />}
+      {!hideNavFooter && <Navbar />}
       <PageContent>{children}</PageContent>
-      <Footer />
+      {!hideNavFooter && <Footer />}
     </Shell>
   );
 }

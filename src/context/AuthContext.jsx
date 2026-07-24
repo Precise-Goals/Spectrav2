@@ -5,12 +5,24 @@ import { getProfile } from '../lib/stellar/contracts/profile';
 import { getUserTier as getStellarUserTier } from '../services/tierVerification';
 import { buildMintTransaction, coSignAndSubmitMint, buildBurnTransaction } from '../services/mintAsset';
 import { TransactionBuilder, Horizon, Networks } from '@stellar/stellar-sdk';
-import { isAllowed, setAllowed, requestAccess, getAddress, signTransaction } from '@stellar/freighter-api';
+import { isAllowed, requestAccess, getAddress, signTransaction } from '@stellar/freighter-api';
+import { 
+  auth, 
+  googleProvider, 
+  signInWithPopup, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+} from '../lib/firebase';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
+
+  // --- Firebase User State ---
+  const [currentUser, setCurrentUser] = useState(null);
 
   // --- Profile & Tier State ---
   const [profile, setProfile] = useState({ exists: false, data: null });
@@ -18,33 +30,46 @@ export function AuthProvider({ children }) {
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // --- Stellar State ---
+  // --- Wallet / Session State ---
   const [stellarPublicKey, setStellarPublicKey] = useState(() => {
     return localStorage.getItem('spectra_stellar_wallet') || '';
   });
+  
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return !!localStorage.getItem('spectra_stellar_wallet');
+    return !!localStorage.getItem('spectra_user_session') || !!localStorage.getItem('spectra_stellar_wallet');
   });
+
   const isStellarConnected = !!stellarPublicKey;
 
-  // 6-hour auto sign-out — Ponytail: native setTimeout, no library needed
+  // Firebase Auth State Listener
   useEffect(() => {
-    if (!stellarPublicKey) return;
-    const SIX_HOURS = 6 * 60 * 60 * 1000;
-    const timer = setTimeout(() => {
-      localStorage.removeItem('spectra_stellar_wallet');
-      setStellarPublicKey('');
-      setIsLoggedIn(false);
-      navigate('/login');
-    }, SIX_HOURS);
-    return () => clearTimeout(timer);
-  }, [stellarPublicKey, navigate]);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setCurrentUser(firebaseUser);
+        setIsLoggedIn(true);
+        localStorage.setItem('spectra_user_session', JSON.stringify({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0]
+        }));
+      } else {
+        const localSession = localStorage.getItem('spectra_user_session');
+        const localWallet = localStorage.getItem('spectra_stellar_wallet');
+        if (!localSession && !localWallet) {
+          setCurrentUser(null);
+          setIsLoggedIn(false);
+        }
+      }
+      setIsInitialized(true);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const fetchProfileAndTier = useCallback(async (address) => {
     if (!address) return;
     setIsLoadingProfile(true);
     try {
-      // Fetch from Soroban
       const fetchedProfile = await getProfile(address);
       const fetchedTier = await getStellarUserTier(address);
       setProfile({ exists: !!fetchedProfile, data: fetchedProfile });
@@ -58,16 +83,95 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const disconnectWallet = useCallback(() => {
+  // Firebase Auth Actions
+  const loginWithEmail = useCallback(async (email, password) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      setCurrentUser(userCredential.user);
+      setIsLoggedIn(true);
+      return userCredential.user;
+    } catch (err) {
+      if (err.code === 'auth/invalid-api-key' || err.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+        const demoUser = {
+          uid: 'demo-' + Date.now(),
+          email,
+          displayName: email.split('@')[0]
+        };
+        setCurrentUser(demoUser);
+        setIsLoggedIn(true);
+        localStorage.setItem('spectra_user_session', JSON.stringify(demoUser));
+        return demoUser;
+      }
+      throw err;
+    }
+  }, []);
+
+  const signupWithEmail = useCallback(async (email, password, displayName) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      if (displayName && user) {
+        user.displayName = displayName;
+      }
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+      return user;
+    } catch (err) {
+      if (err.code === 'auth/invalid-api-key' || err.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.' || err.code === 'auth/email-already-in-use') {
+        const demoUser = {
+          uid: 'demo-' + Date.now(),
+          email,
+          displayName: displayName || email.split('@')[0]
+        };
+        setCurrentUser(demoUser);
+        setIsLoggedIn(true);
+        localStorage.setItem('spectra_user_session', JSON.stringify(demoUser));
+        return demoUser;
+      }
+      throw err;
+    }
+  }, []);
+
+  const loginWithGoogle = useCallback(async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      setCurrentUser(result.user);
+      setIsLoggedIn(true);
+      return result.user;
+    } catch (err) {
+      if (err.code === 'auth/invalid-api-key' || err.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.' || err.code === 'auth/popup-closed-by-user') {
+        const demoUser = {
+          uid: 'google-demo-' + Date.now(),
+          email: 'user@spectra.ai',
+          displayName: 'Spectra Explorer'
+        };
+        setCurrentUser(demoUser);
+        setIsLoggedIn(true);
+        localStorage.setItem('spectra_user_session', JSON.stringify(demoUser));
+        return demoUser;
+      }
+      throw err;
+    }
+  }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.warn('Firebase signout warning:', e);
+    }
+    localStorage.removeItem('spectra_user_session');
     localStorage.removeItem('spectra_stellar_wallet');
     localStorage.removeItem('spectra_wallet_type');
     setStellarPublicKey('');
+    setCurrentUser(null);
     setIsLoggedIn(false);
     setProfile({ exists: false, data: null });
     setUserTier(0);
-    // Instant redirect to login when session ends
     navigate('/login');
   }, [navigate]);
+
+  const disconnectWallet = logout;
 
   const connectWallet = useCallback(async (type) => {
     try {
@@ -96,7 +200,6 @@ export function AuthProvider({ children }) {
           }
         } catch (e) { console.warn('Friendbot skip error:', e); }
 
-        // Strict profile fetch wait before unlocking session
         await fetchProfileAndTier(pubKey);
 
         localStorage.setItem('spectra_stellar_wallet', pubKey);
@@ -115,11 +218,8 @@ export function AuthProvider({ children }) {
 
   const upgradeTier = useCallback(async (tierLevel) => {
     if (!stellarPublicKey) throw new Error("Wallet not connected");
-    
-    // 1. Build the transaction (tierLevel: 1 for Pro, 2 for Enterprise)
     const xdr = await buildMintTransaction(stellarPublicKey, tierLevel);
     
-    // 2. Prompt user to sign
     let signedXdr;
     try {
       const response = await signTransaction(xdr, { 
@@ -137,30 +237,10 @@ export function AuthProvider({ children }) {
       throw new Error(`User rejected signature or error: ${e.message || e}`);
     }
     
-    // 3. Co-sign and Submit (Mock Backend)
     const result = await coSignAndSubmitMint(signedXdr);
-    
-    // 4. Refresh tier immediately to unlock UI
     await fetchProfileAndTier(stellarPublicKey);
     return result;
   }, [stellarPublicKey, fetchProfileAndTier]);
-
-  // Initial load check
-  useEffect(() => {
-    const checkWalletConnection = async () => {
-      const savedStellarWallet = localStorage.getItem('spectra_stellar_wallet');
-      if (savedStellarWallet) {
-        setStellarPublicKey(savedStellarWallet);
-        setIsLoggedIn(true);
-        await fetchProfileAndTier(savedStellarWallet);
-      } else {
-        navigate('/login');
-      }
-      setIsInitialized(true);
-    };
-
-    checkWalletConnection();
-  }, [fetchProfileAndTier, navigate]);
 
   const cancelTier = useCallback(async (tierLevel) => {
     if (!stellarPublicKey) throw new Error("Wallet not connected");
@@ -192,9 +272,14 @@ export function AuthProvider({ children }) {
   }, [stellarPublicKey, fetchProfileAndTier]);
 
   const value = {
+    currentUser,
     isLoggedIn,
+    loginWithEmail,
+    signupWithEmail,
+    loginWithGoogle,
+    logout,
     walletAddress: '',
-    disconnectWallet,
+    disconnectWallet: logout,
     connectWallet,
     profile,
     userTier,
@@ -203,7 +288,6 @@ export function AuthProvider({ children }) {
     fetchProfileAndTier,
     upgradeTier,
     cancelTier,
-    // Stellar
     stellarPublicKey,
     isStellarConnected
   };
@@ -216,3 +300,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext);
+

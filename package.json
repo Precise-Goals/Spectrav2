@@ -19,6 +19,7 @@
     "@tychilabs/react-ugf": "^2.0.0",
     "clsx": "^2.1.1",
     "ethers": "^6.16.0",
+    "firebase": "^12.16.0",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.16.0",
     "process": "^0.11.10",
