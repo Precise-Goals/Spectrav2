@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { saveUserProfile } from '../lib/firestoreProfile';
+import { getProfile, createProfile, updateProfile } from '../lib/stellar/contracts/profile';
+import { isConnected } from '@stellar/freighter-api';
 import NeuralBackground from '../components/ui/NeuralBackground';
 import '../styles/final.css';
 
@@ -358,10 +361,11 @@ const pageVariants = {
 
 /* ─── Component ──────────────────────────────────────────────────────────── */
 
-const TOTAL = 7;
+const TOTAL = 8;
 const STEP_LABELS = [
   'WELCOME',
   'WALLET',
+  'PROFILE',
   'INTENT',
   'EXPERIENCE',
   'INTERACTION',
@@ -371,7 +375,7 @@ const STEP_LABELS = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { connectWallet, isStellarConnected } = useAuth();
+  const { connectWallet, isStellarConnected, currentUser, stellarPublicKey } = useAuth();
 
   const [step, setStep] = useState(1);
   const [intent, setIntent] = useState([]);
@@ -380,30 +384,125 @@ export default function Onboarding() {
   const [interaction, setInteraction] = useState('');
   const [language, setLanguage] = useState('English');
   const [searchLang, setSearchLang] = useState('');
+  // 'unknown' | 'not_installed' | 'installed' | 'connected'
+  const [freighterStatus, setFreighterStatus] = useState('unknown');
+  const [walletError, setWalletError] = useState('');
+  
+  // Profile Details State
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [bio, setBio] = useState('');
+  const [phone, setPhone] = useState('');
+  const [avatarId, setAvatarId] = useState(1);
+  const [hasOnChainProfile, setHasOnChainProfile] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Pre-fill from Firebase on load
+  useEffect(() => {
+    if (currentUser && !name && !email) {
+      if (currentUser.displayName) setName(currentUser.displayName);
+      if (currentUser.email) setEmail(currentUser.email);
+    }
+  }, [currentUser]);
+
+  // Pre-fill from Stellar contract when wallet connects
+  useEffect(() => {
+    if (stellarPublicKey) {
+      getProfile(stellarPublicKey).then(profile => {
+        if (profile && profile.name) {
+          setHasOnChainProfile(true);
+          setName(profile.name);
+          setEmail(profile.email || '');
+          setBio(profile.bio || '');
+          setPhone(profile.phone || '');
+          setAvatarId(profile.avatarId || 1);
+        }
+      }).catch(e => console.warn("No on-chain profile found", e));
+    }
+  }, [stellarPublicKey]);
 
   const next = () => setStep(s => Math.min(s + 1, TOTAL));
   const prev = () => setStep(s => Math.max(s - 1, 1));
 
-  const finish = () => {
-    localStorage.setItem('spectra_onboarding', JSON.stringify({
+  const finish = async () => {
+    const onboardingData = {
       intents: [...intent, customIntent].filter(Boolean),
       experience,
       interaction,
-      language
-    }));
-    navigate('/agent', { replace: true });
+      language,
+    };
+    
+    setIsSaving(true);
+    setWalletError('');
+    
+    // Save to Blockchain (Wallet)
+    if (stellarPublicKey) {
+      const onChainData = { name, email, bio, phone, avatarId };
+      try {
+        if (hasOnChainProfile) {
+          await updateProfile(stellarPublicKey, onChainData);
+        } else {
+          await createProfile(stellarPublicKey, onChainData);
+        }
+      } catch (err) {
+        console.error("Blockchain save failed:", err);
+        setWalletError(err.message || 'Transaction rejected. Profile not saved to wallet.');
+        setIsSaving(false);
+        return; // Halt if blockchain save fails when wallet is connected
+      }
+    }
+
+    // Save to local storage for strict enforcer
+    localStorage.setItem('spectra_onboarding', JSON.stringify(onboardingData));
+
+    // Save to Firestore
+    if (currentUser?.uid) {
+      try {
+        await saveUserProfile(currentUser.uid, {
+          uid: currentUser.uid,
+          email: email || currentUser.email,
+          displayName: name || currentUser.displayName,
+          photoURL: currentUser.photoURL,
+          walletAddress: stellarPublicKey || null,
+          onboarding: onboardingData,
+          profile: { name, email, bio, phone, avatarId },
+        });
+      } catch (err) {
+        console.warn('[Onboarding] Firestore save failed:', err);
+      }
+    }
+
+    setIsSaving(false);
+    navigate('/', { replace: true });
   };
 
   const toggleChip = (c) => {
     setIntent(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
   };
 
+  // Detect Freighter on step 2
+  useEffect(() => {
+    if (step !== 2) return;
+    if (isStellarConnected) { setFreighterStatus('connected'); return; }
+    
+    // Use Freighter API to check connection reliably
+    isConnected().then(detected => {
+      setFreighterStatus(detected ? 'installed' : 'not_installed');
+    }).catch(() => {
+      setFreighterStatus('not_installed');
+    });
+  }, [step, isStellarConnected]);
+
   const handleWallet = async () => {
+    setWalletError('');
     try {
       await connectWallet('stellar');
+      setFreighterStatus('connected');
       next();
     } catch (err) {
-      console.error(err);
+      setWalletError(err.message || 'Failed to connect wallet');
     }
   };
 
@@ -457,17 +556,57 @@ export default function Onboarding() {
 
               <Title>Connect your Freighter Wallet</Title>
 
-              <Subtitle>
-                Securely link to the Stellar ecosystem. You can always connect later from your profile.
-              </Subtitle>
+              {freighterStatus === 'not_installed' && (
+                <>
+                  <Subtitle>
+                    Freighter is not installed. You need it to interact with the Stellar blockchain.
+                  </Subtitle>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <BlueCTA
+                      as="a"
+                      href="https://www.freighter.app/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className="material-symbols-outlined">download</span>
+                      Install Freighter
+                    </BlueCTA>
+                    <PrimaryCTA onClick={async () => {
+                      const detected = await isConnected().catch(() => false);
+                      if (!detected) {
+                        // If still not injected, reload the page to force injection
+                        window.location.reload();
+                      } else {
+                        handleWallet();
+                      }
+                    }}>Connect Wallet</PrimaryCTA>
+                  </div>
+                </>
+              )}
 
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                <BlueCTA onClick={handleWallet}>
-                  <span className="material-symbols-outlined">account_balance_wallet</span>
-                  Connect Wallet
-                </BlueCTA>
-                <PrimaryCTA onClick={next}>Skip for now</PrimaryCTA>
-              </div>
+              {(freighterStatus === 'installed' || freighterStatus === 'unknown') && (
+                <>
+                  <Subtitle>
+                    Securely link to the Stellar ecosystem. You can always connect later from your profile.
+                  </Subtitle>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <BlueCTA onClick={handleWallet}>
+                      <span className="material-symbols-outlined">account_balance_wallet</span>
+                      Connect Wallet
+                    </BlueCTA>
+                    <PrimaryCTA onClick={next}>Skip for now</PrimaryCTA>
+                  </div>
+                  {walletError && (
+                    <p style={{ fontFamily: 'Geist, monospace', fontSize: '11px', color: '#ef4444', marginTop: '4px' }}>
+                      {walletError}
+                    </p>
+                  )}
+                </>
+              )}
+
+              {freighterStatus === 'connected' && (
+                <Subtitle style={{ color: '#22c55e' }}>✓ Wallet connected. Proceeding...</Subtitle>
+              )}
 
               <FooterMeta>
                 <MetaLabel>STEP_02 / 07</MetaLabel>
@@ -477,11 +616,62 @@ export default function Onboarding() {
           </CardWrap>
         );
 
-      /* ──────────── STEP 3: Intent ──────────── */
-      case 3: {
-        const chips = ['Swap tokens', 'Explore AI', 'Learn DeFi', 'Build on Stellar', 'Bridge Assets', 'Just Exploring'];
+      /* ──────────── STEP 3: Profile Details ──────────── */
+      case 3:
         return (
           <CardWrap key="s3" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+            <Card>
+              <StatusRow>
+                <PulseDot />
+                <StatusLabel>USER_PROFILE</StatusLabel>
+              </StatusRow>
+
+              <Title>Setup your Profile</Title>
+              <Subtitle>These details will be securely stored on the Stellar blockchain, tied to your wallet address.</Subtitle>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
+                <TextInput placeholder="Display Name (e.g. Sarthak Patil)" value={name} onChange={e => setName(e.target.value)} />
+                <TextInput placeholder="Email Address" value={email} onChange={e => setEmail(e.target.value)} type="email" />
+                <TextInput placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} type="tel" />
+                <TextInput placeholder="Bio (e.g. Full-Stack MLOps Engineer)" value={bio} onChange={e => setBio(e.target.value)} />
+              </div>
+
+              <Subtitle style={{ marginTop: '12px' }}>Select Avatar:</Subtitle>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                {[1, 2, 3, 4, 5,6].map(id => (
+                  <button
+                    key={id}
+                    onClick={() => setAvatarId(id)}
+                    style={{
+                      width: '48px', height: '48px', borderRadius: '50%',
+                      border: avatarId === id ? '2px solid blue' : '1px solid var(--border-color)',
+                      background: 'transparent', cursor: 'pointer', overflow: 'hidden'
+                    }}
+                  >
+                    <img src={`/profile/${id}.png`} alt={`Avatar ${id}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => { e.target.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + id; }} />
+                  </button>
+                ))}
+              </div>
+
+              <PrimaryCTA onClick={next} disabled={!name}>
+                Continue
+                <span className="material-symbols-outlined">arrow_forward</span>
+              </PrimaryCTA>
+
+              <FooterMeta>
+                <MetaLabel>STEP_03 / 08</MetaLabel>
+                <MetaLabel>REQUIRED</MetaLabel>
+              </FooterMeta>
+            </Card>
+          </CardWrap>
+        );
+
+      /* ──────────── STEP 4: Intent ──────────── */
+      case 4: {
+        const chips = ['Swap tokens', 'Explore AI', 'Learn DeFi', 'Build on Stellar', 'Bridge Assets', 'Just Exploring'];
+        return (
+          <CardWrap key="s4" variants={pageVariants} initial="initial" animate="animate" exit="exit">
             <Card>
               <StatusRow>
                 <PulseDot />
@@ -510,7 +700,7 @@ export default function Onboarding() {
               </PrimaryCTA>
 
               <FooterMeta>
-                <MetaLabel>STEP_03 / 07</MetaLabel>
+                <MetaLabel>STEP_04 / 08</MetaLabel>
                 <MetaLabel>SELECT ANY</MetaLabel>
               </FooterMeta>
             </Card>
@@ -518,8 +708,8 @@ export default function Onboarding() {
         );
       }
 
-      /* ──────────── STEP 4: Experience ──────────── */
-      case 4: {
+      /* ──────────── STEP 5: Experience ──────────── */
+      case 5: {
         const levels = [
           { icon: '🟢', title: 'New to Web3', idx: '01' },
           { icon: '🔵', title: 'Crypto Enthusiast', idx: '02' },
@@ -528,7 +718,7 @@ export default function Onboarding() {
           { icon: '⚫', title: 'Just Exploring', idx: '05' }
         ];
         return (
-          <CardWrap key="s4" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+          <CardWrap key="s5" variants={pageVariants} initial="initial" animate="animate" exit="exit">
             <Card>
               <StatusRow>
                 <PulseDot />
@@ -552,7 +742,7 @@ export default function Onboarding() {
               </BentoGrid>
 
               <FooterMeta>
-                <MetaLabel>STEP_04 / 07</MetaLabel>
+                <MetaLabel>STEP_05 / 08</MetaLabel>
                 <MetaLabel>TAP TO SELECT</MetaLabel>
               </FooterMeta>
             </Card>
@@ -560,10 +750,10 @@ export default function Onboarding() {
         );
       }
 
-      /* ──────────── STEP 5: Interaction ──────────── */
-      case 5:
+      /* ──────────── STEP 6: Interaction ──────────── */
+      case 6:
         return (
-          <CardWrap key="s5" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+          <CardWrap key="s6" variants={pageVariants} initial="initial" animate="animate" exit="exit">
             <Card>
               <StatusRow>
                 <PulseDot />
@@ -602,19 +792,19 @@ export default function Onboarding() {
               </BentoGrid>
 
               <FooterMeta>
-                <MetaLabel>STEP_05 / 07</MetaLabel>
+                <MetaLabel>STEP_06 / 08</MetaLabel>
                 <MetaLabel>TAP TO SELECT</MetaLabel>
               </FooterMeta>
             </Card>
           </CardWrap>
         );
 
-      /* ──────────── STEP 6: Language ──────────── */
-      case 6: {
+      /* ──────────── STEP 7: Language ──────────── */
+      case 7: {
         const langs = ['English', 'Hindi', 'Marathi', 'Tamil', 'Telugu', 'Bengali', 'Auto Detect'];
         const filtered = langs.filter(l => l.toLowerCase().includes(searchLang.toLowerCase()));
         return (
-          <CardWrap key="s6" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+          <CardWrap key="s7" variants={pageVariants} initial="initial" animate="animate" exit="exit">
             <Card>
               <StatusRow>
                 <PulseDot />
@@ -648,7 +838,7 @@ export default function Onboarding() {
               </PrimaryCTA>
 
               <FooterMeta>
-                <MetaLabel>STEP_06 / 07</MetaLabel>
+                <MetaLabel>STEP_07 / 08</MetaLabel>
                 <MetaLabel>TAP TO SELECT</MetaLabel>
               </FooterMeta>
             </Card>
@@ -656,10 +846,10 @@ export default function Onboarding() {
         );
       }
 
-      /* ──────────── STEP 7: Finish ──────────── */
-      case 7:
+      /* ──────────── STEP 8: Finish ──────────── */
+      case 8:
         return (
-          <CardWrap key="s7" variants={pageVariants} initial="initial" animate="animate" exit="exit">
+          <CardWrap key="s8" variants={pageVariants} initial="initial" animate="animate" exit="exit">
             <Card>
               <StatusRow>
                 <PulseDot />
@@ -673,9 +863,28 @@ export default function Onboarding() {
                 Your AI assistant has been personalized and is ready.
               </Subtitle>
 
-              <BlueCTA onClick={finish}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                <input 
+                  type="checkbox" 
+                  id="terms" 
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  style={{ cursor: 'pointer' }}
+                />
+                <label htmlFor="terms" style={{ fontFamily: 'Geist, monospace', fontSize: '11px', color: 'var(--color-secondary)' }}>
+                  I accept the terms and conditions (<a href="/about#data-sovereignty" target="_blank" rel="noopener noreferrer" style={{ color: 'blue', textDecoration: 'underline' }}>here</a>)
+                </label>
+              </div>
+
+              {walletError && (
+                <p style={{ fontFamily: 'Geist, monospace', fontSize: '11px', color: '#ef4444', marginTop: '12px' }}>
+                  {walletError}
+                </p>
+              )}
+
+              <BlueCTA onClick={finish} disabled={isSaving || !acceptedTerms} style={{ marginTop: '12px' }}>
                 <span className="material-symbols-outlined">rocket_launch</span>
-                Launch Spectra
+                {isSaving ? 'Signing Transaction...' : 'Launch Spectra'}
               </BlueCTA>
 
               <FooterMeta>

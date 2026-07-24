@@ -458,8 +458,14 @@ export default function About() {
                   icon: 'fingerprint',
                   text: 'High-impact capital allocations require cryptographic consent. SPECTRA implements EIP-712 typed structured data hashing to enforce Human-in-the-Loop (HITL) constraints. Agents may propose complex multi-step strategies, but execution is physically blocked until explicit, on-chain signature verification is provided by the human principal.',
                 },
+                {
+                  id: 'data-sovereignty',
+                  title: 'DATA SOVEREIGNTY',
+                  icon: 'security',
+                  text: 'Spectra ensures absolute Data Sovereignty for all users. Your profile, interactions, and financial intents are directly mapped and minted to your secure on-chain wallet. You maintain complete, decentralized ownership of your identity and data without being locked into proprietary databases.',
+                },
               ].map((item) => (
-                <ComplianceItem key={item.title}>
+                <ComplianceItem key={item.title} id={item.id}>
                   <ItemHeader>
                     <ItemTitle>{item.title}</ItemTitle>
                     <span className="material-symbols-outlined" style={{ color: 'var(--color-primary)' }}>{item.icon}</span>

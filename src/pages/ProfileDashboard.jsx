@@ -7,6 +7,7 @@ import { useError } from '../context/ErrorContext';
 import { useRateLimit } from '../context/RateLimitContext';
 import { getProfile, createProfile, updateProfile } from '../lib/stellar/contracts/profile';
 import { getUserTier } from "../services/tierVerification";
+import { getUserProfile, saveUserProfile } from '../lib/firestoreProfile';
 
 // Ponytail: Rewriting to Neo-Brutalist Cyberpunk aesthetic per user request.
 
@@ -265,6 +266,7 @@ export default function ProfileDashboard() {
     const loadProfile = async (address) => {
       setLoading(true);
       try {
+        // Try Stellar contract first
         if (isStellarConnected) {
           const [stellarProfile, tier] = await Promise.all([
             getProfile(address).catch(() => null),
@@ -284,6 +286,19 @@ export default function ProfileDashboard() {
           }
           setUserTier(Number(tier));
         }
+
+        // Always try Firestore as fallback/supplement for display name & email
+        if (currentUser?.uid) {
+          const fsProfile = await getUserProfile(currentUser.uid).catch(() => null);
+          if (fsProfile) {
+            setFormData(prev => ({
+              ...prev,
+              name:  prev.name  || fsProfile.profile?.name  || fsProfile.displayName || '',
+              email: prev.email || fsProfile.profile?.email || fsProfile.email        || '',
+              avatarId: prev.avatarId || fsProfile.profile?.avatarId || 1,
+            }));
+          }
+        }
       } catch (err) {
         console.warn('Failed to load profile data:', err);
       } finally {
@@ -294,13 +309,25 @@ export default function ProfileDashboard() {
     if (account) {
       loadProfile(account);
     } else {
+      // No wallet — still try Firestore for basic info
+      if (currentUser?.uid) {
+        getUserProfile(currentUser.uid).then(fsProfile => {
+          if (fsProfile) {
+            setFormData(prev => ({
+              ...prev,
+              name:  fsProfile.profile?.name  || fsProfile.displayName || '',
+              email: fsProfile.profile?.email || fsProfile.email        || '',
+              avatarId: fsProfile.profile?.avatarId || 1,
+            }));
+          }
+        }).catch(() => {});
+      }
       setTimeout(() => {
         setHasProfile(false);
-        setFormData({ name: '', email: '', phone: '', bio: '', avatarId: 1 });
         setUserTier(0);
       }, 0);
     }
-  }, [account, isStellarConnected]);
+  }, [account, isStellarConnected, currentUser]);
 
   const saveProfile = async () => {
     setSaving(true);
@@ -317,6 +344,13 @@ export default function ProfileDashboard() {
       } else {
         requireWalletConnect();
         throw new Error('Please connect your Freighter wallet to save your profile.');
+      }
+      // Sync to Firestore so data is available without Stellar
+      if (currentUser?.uid) {
+        await saveUserProfile(currentUser.uid, {
+          profile: { ...formData },
+          walletAddress: stellarPublicKey || null,
+        }).catch(e => console.warn('Firestore profile sync failed:', e));
       }
     } catch (err) {
       showError(err.message || 'Failed to save profile. Make sure to confirm transaction.');

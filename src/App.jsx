@@ -46,17 +46,39 @@ const ScrollToTop = () => {
   return null;
 };
 
+import { useAuth } from './context/AuthContext';
+
+const StrictOnboardingEnforcer = () => {
+  const { pathname } = useLocation();
+  const { isLoggedIn, isInitialized, logout } = useAuth();
+
+  React.useEffect(() => {
+    if (!isInitialized || !isLoggedIn) return;
+    
+    // Check if onboarding is strictly complete
+    const hasOnboarded = !!localStorage.getItem('spectra_onboarding');
+    
+    // If they leave the onboarding or login page without finishing, pull them out.
+    if (!hasOnboarded && pathname !== '/onboarding' && pathname !== '/login') {
+      console.warn("User left onboarding before completion. Strict enforcement: logging out.");
+      logout();
+    }
+  }, [pathname, isLoggedIn, isInitialized, logout]);
+  
+  return null;
+};
+
 export default function App() {
   return (
     <MainLayout>
       <ScrollToTop />
+      <StrictOnboardingEnforcer />
       <ConnectWalletModal />
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public Routes */}
           <Route path="/"         element={<Home />}     />
           <Route path="/about"    element={<About />}    />
-          <Route path="/exchange" element={<Exchange />} />
           <Route path="/journal"  element={<Journal />}  />
           <Route path="/guide"    element={<Guide />}    />
           
@@ -67,13 +89,14 @@ export default function App() {
           {/* <Route path="/profile"  element={<Profile />}  /> */}
           <Route path="/legal"    element={<LegalPage />} />
           <Route path="/login"    element={<Login />}    />
-          <Route path="/spectra"  element={<SpectraSupport />} />
 
-          {/* Protected Routes */}
+          {/* Protected Routes (Products & Pricing) */}
           <Route path="/onboarding" element={<RequireAuth><Onboarding /></RequireAuth>} />
           <Route path="/agent" element={<RequireAuth><Agent /></RequireAuth>} />
           <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
           <Route path="/mint" element={<RequireAuth><Mint /></RequireAuth>} />
+          <Route path="/exchange" element={<RequireAuth><Exchange /></RequireAuth>} />
+          <Route path="/spectra" element={<RequireAuth><SpectraSupport /></RequireAuth>} />
         </Routes>
       </Suspense>
     </MainLayout>

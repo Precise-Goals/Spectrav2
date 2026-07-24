@@ -15,6 +15,7 @@ import {
   signOut, 
   onAuthStateChanged 
 } from '../lib/firebase';
+import { saveUserProfile } from '../lib/firestoreProfile';
 
 const AuthContext = createContext();
 
@@ -171,6 +172,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('spectra_user_session');
     localStorage.removeItem('spectra_stellar_wallet');
     localStorage.removeItem('spectra_wallet_type');
+    localStorage.removeItem('spectra_onboarding');
     setStellarPublicKey('');
     setCurrentUser(null);
     setIsLoggedIn(false);
@@ -214,6 +216,18 @@ export function AuthProvider({ children }) {
         localStorage.setItem('spectra_wallet_type', 'freighter');
         setStellarPublicKey(pubKey);
         setIsLoggedIn(true);
+
+        // Map wallet address to Firebase user in Firestore
+        const fbUser = auth.currentUser;
+        if (fbUser) {
+          await saveUserProfile(fbUser.uid, {
+            walletAddress: pubKey,
+            uid: fbUser.uid,
+            email: fbUser.email,
+            displayName: fbUser.displayName,
+          }).catch(e => console.warn('[AuthContext] Firestore wallet sync failed:', e));
+        }
+
         return pubKey;
       }
 
