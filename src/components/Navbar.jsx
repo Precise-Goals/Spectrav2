@@ -540,7 +540,8 @@ export default function Navbar() {
               {activeTab && (
                 <div
                   key={activeTab}
-                  className="absolute top-full pt-3 z-50"
+                  className="absolute z-50"
+                  style={{ top: 'calc(100% + 32px)' }}
                   onMouseEnter={handleFlyoutEnter}
                   onMouseLeave={handleTabLeave}
                 >
