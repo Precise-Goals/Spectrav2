@@ -14,6 +14,7 @@ const PageContent = styled.main`
   flex: 1;
   display: flex;
   flex-direction: column;
+  margin-top: 48px;
 `;
 
 import { useLocation } from 'react-router-dom';
