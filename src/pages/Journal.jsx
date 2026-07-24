@@ -1,152 +1,236 @@
-import { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { Zap, Shield } from 'lucide-react';
+import { Zap, Shield, Globe } from 'lucide-react';
 
-/* ─── YAGNI Ledger ─────────────────────────────────────────────────────────────
-// Ponytail: Skipped heavy masonry layout libraries (like react-grid-layout). 
-// Native CSS Grid with responsive spans handles a sleek bento layout efficiently.
-──────────────────────────────────────────────────────────────────────────────── */
+/* ─── Styled Components (Matching About/Guide) ───────────────────────────── */
 
 const Page = styled.div`
-  min-height: 50vh;
-  padding: 128px 24px 64px;
-  max-width: 1200px;
+  flex: 1;
+  padding-top: 128px;
+  padding-bottom: 96px;
+  padding-left: 24px;
+  padding-right: 24px;
+  width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
-  font-family: 'Poppins', sans-serif;
-  color: #fff;
-`;
 
-const Header = styled.header`
-  margin-bottom: 64px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-`;
-
-const Pill = styled.div`
-  font-family: 'Geist', monospace;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 6px 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 255, 0.4);
-  background: rgba(0, 0, 255, 0.1);
-  color: rgba(0, 0, 255, 0.7);
-  display: inline-block;
-`;
-
-const Title = styled.h1`
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  margin: 0;
-  
-  span {
-    color: blue;
-  }
-`;
-
-const Subtitle = styled.p`
-  font-size: 1.125rem;
-  color: #a1a1aa;
-  max-width: 500px;
-  line-height: 1.6;
-  margin: 0;
-`;
-
-const BentoGrid = styled.div`
-  display: grid;
-  gap: 24px;
-  grid-template-columns: 1fr;
-  
   @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: minmax(280px, auto);
+    padding-left: 64px;
+    padding-right: 64px;
   }
 `;
 
-const BentoCard = styled.div`
-  background: rgba(10, 10, 11, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 32px;
-  padding: 32px;
+const HeroSection = styled.section`
+  margin-bottom: 128px;
+`;
+
+const Grid12 = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  align-items: end;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(12, 1fr);
+  }
+`;
+
+const ColSpan8 = styled.div`
+  grid-column: span 4;
+
+  @media (min-width: 768px) {
+    grid-column: span 8;
+  }
+`;
+
+const ColSpan4Right = styled.div`
+  grid-column: span 4;
+  margin-top: 32px;
+
+  @media (min-width: 768px) {
+    grid-column: span 4;
+    margin-top: 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+`;
+
+const PageTitle = styled.h1`
+  font-family: 'Poppins', sans-serif;
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  color: var(--color-primary);
+  margin-bottom: 24px;
+`;
+
+const PageSubtitle = styled.p`
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--color-secondary);
+  max-width: 640px;
+`;
+
+const StatusBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+`;
+
+const PulseDot = styled.span`
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+`;
+
+const StatusText = styled.span`
+  font-family: 'Geist', monospace;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--color-primary);
+`;
+
+const HeroDivider = styled.div`
+  width: 100%;
+  height: 1px;
+  background: var(--border-color);
+  margin-top: 48px;
+`;
+
+const JournalSection = styled.section`
+  margin-bottom: 128px;
+`;
+
+const SectionGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(12, 1fr);
+  }
+`;
+
+const StickyCol = styled.div`
+  grid-column: span 4;
+  margin-bottom: 32px;
+
+  @media (min-width: 768px) {
+    grid-column: span 4;
+    margin-bottom: 0;
+  }
+`;
+
+const StickyTitle = styled.h2`
+  font-family: 'Poppins', sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+  position: sticky;
+  top: 160px;
+`;
+
+const ContentCol = styled.div`
+  grid-column: span 4;
   display: flex;
   flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  
+  gap: 64px;
 
-
-  /* Dynamic Spanning */
-  @media (min-width: 1024px) {
-    grid-column: ${props => props.$colSpan ? `span ${props.$colSpan}` : 'span 1'};
-    grid-row: ${props => props.$rowSpan ? `span ${props.$rowSpan}` : 'span 1'};
+  @media (min-width: 768px) {
+    grid-column: span 8;
   }
+`;
+
+const ContentBlock = styled.div`
+  border: 1px solid var(--border-color);
+  padding: 32px;
+  background: var(--bg-surface);
+`;
+
+const BlockHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+`;
+
+const BlockTitle = styled.h3`
+  font-family: 'Geist', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const BlockTag = styled.span`
+  font-family: 'Geist', monospace;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: var(--color-secondary);
+`;
+
+const BodyText = styled.p`
+  font-family: 'Poppins', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-primary);
+  opacity: 0.87;
+  margin-bottom: 16px;
 `;
 
 const TweetContainer = styled.div`
   width: 100%;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   
-  /* Tweet wrapper overrides to fit seamlessly */
+  /* Overrides to make twitter embed fit seamlessly */
   .twitter-tweet {
     margin: 0 !important;
     width: 100% !important;
   }
 `;
 
-const CardIcon = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 16px;
-  background: rgba(0, 0, 255, 0.15);
-  color: rgba(0, 0, 255, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: auto;
-`;
-
-const CardTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 500;
-  margin: 24px 0 8px;
-  color: #ffffff;
-`;
-
-const CardText = styled.p`
-  font-size: 0.95rem;
-  color: #a1a1aa;
-  line-height: 1.6;
-  margin: 0;
-`;
-
 const LargeStat = styled.div`
+  font-family: 'Poppins', sans-serif;
   font-size: clamp(3rem, 5vw, 5rem);
   font-weight: 500;
   letter-spacing: -0.04em;
   color: blue;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+  line-height: 1;
+`;
+
+const TwoColGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
 `;
 
 // Hook to natively load the Twitter Widget Script just-in-time
 const useTwitterWidget = () => {
   useEffect(() => {
-    // Only append if it doesn't already exist to prevent duplicates on remount
     if (!document.getElementById("twitter-wjs")) {
       const script = document.createElement("script");
       script.id = "twitter-wjs";
@@ -155,71 +239,130 @@ const useTwitterWidget = () => {
       script.charset = "utf-8";
       document.body.appendChild(script);
     } else if (window.twttr && window.twttr.widgets) {
-      // If script exists and we re-rendered, trigger a widget load
       window.twttr.widgets.load();
     }
   }, []);
 };
 
+function useScrollReveal() {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const els = el.querySelectorAll('.reveal-item');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('is-visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    els.forEach((e) => { if (!e.classList.contains('is-visible')) observer.observe(e); });
+    return () => observer.disconnect();
+  }, []);
+  return ref;
+}
+
 export default function Journal() {
   useTwitterWidget();
+  const pageRef = useScrollReveal();
 
   return (
-    <Page>
-      <Header>
-        {/* <Pill>Marketing & Growth</Pill> */}
-        <Title>The Spectra <span>Network</span></Title>
-        {/* <Subtitle>Discover the future of gasless execution. Follow our journey as we redefine decentralized agentic architectures.</Subtitle> */}
-      </Header>
+    <Page ref={pageRef} className="bg-grid-overlay">
+      
+      {/* Hero */}
+      <HeroSection>
+        <Grid12>
+          <ColSpan8>
+            <PageTitle>[ SPECTRA JOURNAL ]</PageTitle>
+            <PageSubtitle>
+              Discover the future of gasless execution. Follow our journey as we redefine decentralized agentic architectures and ecosystem growth.
+            </PageSubtitle>
+          </ColSpan8>
+          <ColSpan4Right>
+            <StatusBadge>
+              <PulseDot />
+              <StatusText>NETWORK: ONLINE</StatusText>
+            </StatusBadge>
+          </ColSpan4Right>
+        </Grid12>
+        <HeroDivider />
+      </HeroSection>
 
-      <BentoGrid>
-        
-        {/* Main Tweet Block (Spans 2 columns, 2 rows) */}
-        <BentoCard $colSpan={2} $rowSpan={2} style={{ padding: 0, border: 'none', background: "white" }}>
-          <TweetContainer>
-            <blockquote className="twitter-tweet" data-theme="light">
-              <p lang="en" dir="ltr">
-                Web3&#39;s native gas bottleneck stops users. <br/>Spectra Wallet fix this with an AI agent &amp; zero-gas execution via UGF. ⚡
-                <a href="https://x.com/BuildOnStellar?ref_src=twsrc%5Etfw">@BuildOnStellar</a> 
-                <a href="https://x.com/riseinweb3?ref_src=twsrc%5Etfw">@riseinweb3</a> 
-                <a href="https://x.com/IND_stellar?ref_src=twsrc%5Etfw">@IND_stellar</a> 
-                <a href="https://x.com/StellarOrg?ref_src=twsrc%5Etfw">@StellarOrg</a> 
-                <a href="https://x.com/fair_communityy?ref_src=twsrc%5Etfw">@fair_communityy</a> 
-                <a href="https://x.com/hashtag/StellarBuildStation?src=hash&amp;ref_src=twsrc%5Etfw">#StellarBuildStation</a> 
-                <a href="https://x.com/hashtag/StellarBuildStationPune?src=hash&amp;ref_src=twsrc%5Etfw">#StellarBuildStationPune</a> 
-                <a href="https://x.com/hashtag/BuildOnStellar?src=hash&amp;ref_src=twsrc%5Etfw">#BuildOnStellar</a> 
-                <a href="https://x.com/hashtag/RiseIn?src=hash&amp;ref_src=twsrc%5Etfw">#RiseIn</a> 
-                <a href="https://x.com/hashtag/FAIRCommunity?src=hash&amp;ref_src=twsrc%5Etfw">#FAIRCommunity</a> 
-                <a href="https://t.co/ziinxfOZBy">pic.twitter.com/ziinxfOZBy</a>
-              </p>
-              &mdash; Spectra Ai - Agentic Wallet (@spectra_falcons) 
-              <a href="https://x.com/spectra_falcons/status/2075670710924828861?ref_src=twsrc%5Etfw">July 10, 2026</a>
-            </blockquote>
-          </TweetContainer>
-        </BentoCard>
+      {/* Announcements */}
+      <JournalSection>
+        <SectionGrid>
+          <StickyCol>
+            <StickyTitle>Announcements</StickyTitle>
+          </StickyCol>
+          <ContentCol>
+            <ContentBlock style={{ background: '#fff' }}>
+              <TweetContainer>
+                <blockquote className="twitter-tweet" data-theme="light">
+                  <p lang="en" dir="ltr">
+                    Web3&#39;s native gas bottleneck stops users. <br/>Spectra Wallet fix this with an AI agent &amp; zero-gas execution via UGF. ⚡
+                    <a href="https://x.com/BuildOnStellar?ref_src=twsrc%5Etfw">@BuildOnStellar</a> 
+                    <a href="https://x.com/riseinweb3?ref_src=twsrc%5Etfw">@riseinweb3</a> 
+                    <a href="https://x.com/IND_stellar?ref_src=twsrc%5Etfw">@IND_stellar</a> 
+                    <a href="https://x.com/StellarOrg?ref_src=twsrc%5Etfw">@StellarOrg</a> 
+                    <a href="https://x.com/fair_communityy?ref_src=twsrc%5Etfw">@fair_communityy</a> 
+                    <a href="https://x.com/hashtag/StellarBuildStation?src=hash&amp;ref_src=twsrc%5Etfw">#StellarBuildStation</a> 
+                    <a href="https://x.com/hashtag/StellarBuildStationPune?src=hash&amp;ref_src=twsrc%5Etfw">#StellarBuildStationPune</a> 
+                    <a href="https://x.com/hashtag/BuildOnStellar?src=hash&amp;ref_src=twsrc%5Etfw">#BuildOnStellar</a> 
+                    <a href="https://x.com/hashtag/RiseIn?src=hash&amp;ref_src=twsrc%5Etfw">#RiseIn</a> 
+                    <a href="https://x.com/hashtag/FAIRCommunity?src=hash&amp;ref_src=twsrc%5Etfw">#FAIRCommunity</a> 
+                    <a href="https://t.co/ziinxfOZBy">pic.twitter.com/ziinxfOZBy</a>
+                  </p>
+                  &mdash; Spectra Ai - Agentic Wallet (@spectra_falcons) 
+                  <a href="https://x.com/spectra_falcons/status/2075670710924828861?ref_src=twsrc%5Etfw">July 10, 2026</a>
+                </blockquote>
+              </TweetContainer>
+            </ContentBlock>
+          </ContentCol>
+        </SectionGrid>
+      </JournalSection>
 
-        {/* Highlight Card 1 */}
-        <BentoCard $colSpan={1} $rowSpan={1}>
-          <CardIcon><Zap size={24} /></CardIcon>
-          <CardTitle>Zero Gas Limits</CardTitle>
-          <CardText>Experience fully abstracted meta-transactions powered by the UGF relayer network.</CardText>
-        </BentoCard>
+      {/* Network Capabilities */}
+      <JournalSection>
+        <SectionGrid>
+          <StickyCol>
+            <StickyTitle>Network<br/>Capabilities</StickyTitle>
+          </StickyCol>
+          <ContentCol>
+            
+            <TwoColGrid>
+              <ContentBlock>
+                <BlockHeader>
+                  <BlockTitle><Zap size={16} /> Zero Gas Limits</BlockTitle>
+                </BlockHeader>
+                <BodyText>
+                  Experience fully abstracted meta-transactions powered by the UGF relayer network. Say goodbye to native token bottlenecks.
+                </BodyText>
+              </ContentBlock>
 
-        {/* Highlight Card 2 */}
-        <BentoCard $colSpan={1} $rowSpan={1}>
-          <CardIcon><Shield size={24} /></CardIcon>
-          <CardTitle>Bulletproof</CardTitle>
-          <CardText>Military-grade multisig architecture wrapped in an impossibly simple interface.</CardText>
-        </BentoCard>
+              <ContentBlock>
+                <BlockHeader>
+                  <BlockTitle><Shield size={16} /> Bulletproof</BlockTitle>
+                </BlockHeader>
+                <BodyText>
+                  Military-grade multisig architecture wrapped in an impossibly simple interface designed for non-custodial security.
+                </BodyText>
+              </ContentBlock>
+            </TwoColGrid>
 
-        {/* Large Stat Card */}
-        <BentoCard $colSpan={2} $rowSpan={1} style={{ justifyContent: 'center', background: 'linear-gradient(135deg, rgba(0,0,255,0.1), rgba(10,10,11,0.8))' }}>
-          <LargeStat>Duality.</LargeStat>
-          <CardTitle style={{ marginTop: 0 }}>Supported Ecosystems</CardTitle>
-          <CardText>Spectra is a hybrid multichain engine that abstracts network boundaries by executing parallel Soroban actions using Freighter.</CardText>
-        </BentoCard>
+            <ContentBlock>
+              <BlockHeader>
+                <BlockTitle><Globe size={16} /> Supported Ecosystems</BlockTitle>
+                <BlockTag>[ CROSS-CHAIN ]</BlockTag>
+              </BlockHeader>
+              <LargeStat>Duality.</LargeStat>
+              <BodyText>
+                Spectra is a hybrid multichain engine that abstracts network boundaries by executing parallel Soroban actions seamlessly bridging Stellar and EVM environments without user friction.
+              </BodyText>
+            </ContentBlock>
 
-      </BentoGrid>
+          </ContentCol>
+        </SectionGrid>
+      </JournalSection>
+
     </Page>
   );
 }
