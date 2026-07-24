@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, Edit2, Activity, Zap, Shield, Save, User, ArrowRightLeft, Star } from 'lucide-react';
+import { Mail, Phone, Edit2, Activity, Zap, Shield, Save, User, ArrowRightLeft, Star, Hexagon, X } from 'lucide-react';
 import styled from 'styled-components';
 import { useAuth } from '../context/AuthContext';
 import { useError } from '../context/ErrorContext';
@@ -240,7 +240,7 @@ const LogItem = ({ icon, title, sub, time }) => (
 /* ─── Component ───────────────────────────────────────────────────────────── */
 
 export default function ProfileDashboard() {
-  const { connectWallet, stellarPublicKey, isStellarConnected, fetchProfileAndTier } = useAuth();
+  const { currentUser, connectWallet, stellarPublicKey, isStellarConnected, fetchProfileAndTier } = useAuth();
   const { showError } = useError();
   const { getUsage } = useRateLimit();
   const navigate = useNavigate();
@@ -251,6 +251,7 @@ export default function ProfileDashboard() {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
+  const [showConnectModal, setShowConnectModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -330,28 +331,6 @@ export default function ProfileDashboard() {
     return 'NEXUS';
   };
 
-  if (!account) {
-    return (
-      <Container style={{ justifyContent: 'center' }} className='bg-grid-overlay'>
-        <CyberCard style={{ maxWidth: '440px', width: '100%', alignItems: 'center' }}>
-          <Shield size={56} style={{ margin: '0 auto 24px', color: '#1D4ED8' }} />
-          <Text size="24px" weight="700" sans upper mb="16px">Web3 Identity Gateway</Text>
-          <Text color="#9CA3AF" size="14px" mb="32px" center lh="1.6">
-            Connect your Freighter wallet to access your unified Soroban profile.
-          </Text>
-          <Flex col gap="16px" w="100%">
-            <SolidButton full onClick={async () => {
-              try { await connectWallet('stellar'); } 
-              catch(err) { showError(err.message || 'Failed to connect Freighter.'); }
-            }}>
-              Connect Freighter
-            </SolidButton>
-          </Flex>
-        </CyberCard>
-      </Container>
-    );
-  }
-
   return (
     <Container>
       <Grid>
@@ -360,10 +339,16 @@ export default function ProfileDashboard() {
         <CyberCard style={{ height: '100%' }}>
           <Flex justify="space-between" align="center" mb="40px">
             <Badge>IDENTITY</Badge>
-            {!isEditing && !loading && (
-              <OutlineButton onClick={() => setIsEditing(true)}>
-                <Edit2 size={12} /> EDIT
-              </OutlineButton>
+            {!account ? (
+              <SolidButton p="6px 16px" onClick={() => setShowConnectModal(true)}>
+                CONNECT FREIGHTER
+              </SolidButton>
+            ) : (
+              !isEditing && !loading && (
+                <OutlineButton onClick={() => setIsEditing(true)}>
+                  <Edit2 size={12} /> EDIT
+                </OutlineButton>
+              )
             )}
           </Flex>
 
@@ -416,7 +401,7 @@ export default function ProfileDashboard() {
                   <img src={`/profile/${formData.avatarId}.png`} alt="Profile Avatar" onError={(e) => { e.currentTarget.src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + formData.avatarId; }} />
                 </AvatarBox>
                 <Flex col gap="12px">
-                  <Text size="46px" weight="800" sans upper lh="1">{formData.name || 'ANONYMOUS USER'}</Text>
+                  <Text size="46px" weight="800" sans upper lh="1">{formData.name || currentUser?.displayName || currentUser?.email?.split('@')[0] || 'UNNAMED USER'}</Text>
                   <Text color="#1D4ED8" size="14px" weight="600" upper spacing="0.05em">{getTierName()} SUBSCRIBER</Text>
                 </Flex>
               </Flex>
@@ -430,7 +415,7 @@ export default function ProfileDashboard() {
               <Flex col gap="16px">
                 <Flex align="center" gap="16px">
                   <IconBox><Mail size={18} /></IconBox>
-                  <Text color="#D1D5DB" size="14px">{formData.email || 'No email registered'}</Text>
+                  <Text color="#D1D5DB" size="14px">{formData.email || currentUser?.email || 'No email registered'}</Text>
                 </Flex>
                 <Flex align="center" gap="16px">
                   <IconBox><Phone size={18} /></IconBox>
@@ -512,6 +497,48 @@ export default function ProfileDashboard() {
         </Flex>
 
       </Grid>
+
+      {/* ── Connect Modal ── */}
+      {showConnectModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0, 0, 20, 0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '440px', margin: '0 24px' }}>
+            {/* The white offset block */}
+            <div style={{ position: 'absolute', inset: 0, background: '#fff', transform: 'translate(-12px, 12px)', zIndex: 0 }}></div>
+            
+            {/* The main block */}
+            <div style={{ position: 'relative', background: '#050505', border: '1px solid #1D4ED8', padding: '48px 32px', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <button 
+                onClick={() => setShowConnectModal(false)} 
+                style={{ position: 'absolute', top: '16px', right: '16px', background: 'transparent', border: 'none', color: '#1D4ED8', cursor: 'pointer', padding: 0 }}
+              >
+                <X size={20} />
+              </button>
+              
+              <Text size="42px" weight="800" sans upper center mb="16px" style={{ letterSpacing: '0.02em', color: '#fff' }}>LOGIN.</Text>
+              
+              <Text color="#9CA3AF" size="14px" mb="40px" center lh="1.6">
+                Select your preferred network engine to authenticate.
+              </Text>
+              
+              <Flex col gap="16px" w="100%">
+                <SolidButton full onClick={async () => {
+                  try { 
+                    await connectWallet('stellar'); 
+                    setShowConnectModal(false); 
+                  } catch(err) { 
+                    showError(err.message || 'Failed to connect Freighter.'); 
+                  }
+                }}>
+                  <Flex align="center" justify="center" gap="12px">
+                    <Hexagon size={18} />
+                    Connect Freighter
+                  </Flex>
+                </SolidButton>
+              </Flex>
+            </div>
+          </div>
+        </div>
+      )}
     </Container>
   );
 }
