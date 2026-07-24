@@ -306,7 +306,8 @@ export default function Login() {
   }
 
   if (isLoggedIn) {
-    return <Navigate to="/onboarding" replace />;
+    const hasOnboarded = !!localStorage.getItem('spectra_onboarding');
+    return <Navigate to={hasOnboarded ? from : "/onboarding"} replace />;
   }
 
   const handleSubmit = async (e) => {

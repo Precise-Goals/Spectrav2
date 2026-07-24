@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import NeuralBackground from '../components/ui/NeuralBackground';
 import '../styles/final.css';
 
 /* ─── Design Tokens (matching CinematicHero / Login / Navbar) ────────────── */
@@ -692,8 +693,10 @@ export default function Onboarding() {
 
   return (
     <Page>
+      <NeuralBackground color="blue" trailOpacity={0.15} speed={0.8} />
+      
       {/* ── Fixed top bar ── */}
-      <TopBar>
+      <TopBar style={{ position: 'fixed', zIndex: 50 }}>
         <TopLabel>SPECTRA — ONBOARDING</TopLabel>
 
         <ProgressBar>
@@ -717,9 +720,11 @@ export default function Onboarding() {
       </TopBar>
 
       {/* ── Step content ── */}
-      <AnimatePresence mode="wait">
-        {renderStep()}
-      </AnimatePresence>
+      <div style={{ position: 'relative', zIndex: 10, width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <AnimatePresence mode="wait">
+          {renderStep()}
+        </AnimatePresence>
+      </div>
     </Page>
   );
 }
