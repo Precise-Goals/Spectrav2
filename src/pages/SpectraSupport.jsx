@@ -200,7 +200,10 @@ export default function SpectraSupport() {
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = "en-US";
 
+      let networkRetryCount = 0;
+
       recognitionRef.current.onresult = async (event) => {
+        networkRetryCount = 0; // Reset on success
         let interim = '';
         let final = '';
 
@@ -230,18 +233,34 @@ export default function SpectraSupport() {
       };
 
       recognitionRef.current.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
-        setIsListening(false);
-        setCaptionInterim('');
-        setCaptionType('processing');
+        if (event.error !== 'network') {
+          console.warn("Speech recognition error:", event.error);
+        }
         
         if (event.error === 'network') {
-          setCaptionText("Browser speech recognition failed (Network Error). This happens sometimes on localhost without HTTPS, or if a browser extension is blocking it.");
+          if (networkRetryCount < 3) {
+            networkRetryCount++;
+            console.warn(`Speech network error, retrying (${networkRetryCount}/3)...`);
+            try {
+              recognitionRef.current.stop();
+              setTimeout(() => {
+                recognitionRef.current?.start();
+              }, 200);
+            } catch (e) {
+              console.warn("Failed to restart speech recognition:", e);
+            }
+            return; // Don't stop listening state
+          }
+          setCaptionText("Speech recognition disconnected (Network). If you're using Brave browser, you may need to enable Web Speech APIs, or use Chrome/Safari.");
         } else if (event.error === 'not-allowed') {
           setCaptionText("Microphone access denied. Please allow microphone permissions in your browser.");
         } else {
           setCaptionText(`Microphone error: ${event.error}`);
         }
+
+        setIsListening(false);
+        setCaptionInterim('');
+        setCaptionType('processing');
         clearCaptionAfterDelay(5000);
       };
 
