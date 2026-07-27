@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import SEO from '../components/ui/SEO';
 
 const Page = styled.div`
   flex: 1;
@@ -139,6 +140,11 @@ const ListItem = styled.li`
 export default function PrivacyPolicy() {
   return (
     <Page className="bg-grid-overlay">
+      <SEO 
+        title="Privacy Policy & Legal Framework" 
+        description="Review the legal terms, privacy policy, and data sovereignty guarantees for Spectra Web3 Agentic Wallet on Stellar."
+        keywords="Spectra Privacy Policy, Web3 Terms of Service, Legal, Data Sovereignty, Stellar Wallet Terms"
+      />
       <HeroSection>
         <Grid12>
           <ColSpan8>

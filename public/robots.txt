@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin-*
+Disallow: /secret-*
+Disallow: /api/admin/*
 
 Sitemap: https://falcons-spectra.vercel.app/sitemap.xml

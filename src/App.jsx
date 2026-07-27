@@ -1,8 +1,11 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import styled from 'styled-components';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
-import './styles/final.css'
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { trackPageView, trackWebVitals } from './services/analyticsService';
+import './styles/final.css';
 
 const Home     = lazy(() => import('./pages/Home'));
 const About    = lazy(() => import('./pages/About'));
@@ -21,6 +24,7 @@ const Guide      = lazy(() => import('./pages/Guide'));
 
 import RequireAuth from './components/layout/RequireAuth';
 import ConnectWalletModal from './components/ui/ConnectWalletModal';
+import { useAuth } from './context/AuthContext';
 
 const LoaderWrap = styled.div`
   height: 100vh;
@@ -40,19 +44,17 @@ const Loader = () => <LoaderWrap>SPECTRA — LOADING...</LoaderWrap>;
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
-  React.useEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
   return null;
 };
 
-import { useAuth } from './context/AuthContext';
-
 const StrictOnboardingEnforcer = () => {
   const { pathname } = useLocation();
   const { isLoggedIn, isInitialized, logout } = useAuth();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isInitialized || !isLoggedIn) return;
     
     // Check if onboarding is strictly complete
@@ -68,11 +70,34 @@ const StrictOnboardingEnforcer = () => {
   return null;
 };
 
+/**
+ * Real-time Analytics Tracker for Vercel Web Vitals & Firebase User Activity
+ */
+const RealtimeAnalyticsTracker = () => {
+  const location = useLocation();
+  const { currentUser, userTier } = useAuth();
+
+  useEffect(() => {
+    // 1. Log actual page view in Firestore and Local storage
+    trackPageView(location.pathname, currentUser, userTier);
+
+    // 2. Measure Web Vitals on page navigation
+    const timer = setTimeout(() => {
+      trackWebVitals();
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [location.pathname, currentUser, userTier]);
+
+  return null;
+};
+
 export default function App() {
   return (
     <MainLayout>
       <ScrollToTop />
       <StrictOnboardingEnforcer />
+      <RealtimeAnalyticsTracker />
       <ConnectWalletModal />
       <Suspense fallback={<Loader />}>
         <Routes>
@@ -83,10 +108,9 @@ export default function App() {
           <Route path="/guide"    element={<Guide />}    />
           
           {/* Secret Admin Routes */}
-          <Route path={`/${import.meta.env.VITE_ADMIN_URL}`} element={<AdminLogin />} />
+          <Route path={`/${import.meta.env.VITE_ADMIN_URL || 'secret-admin-portal'}`} element={<AdminLogin />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
-          {/* <Route path="/profile"  element={<Profile />}  /> */}
           <Route path="/legal"    element={<LegalPage />} />
           <Route path="/login"    element={<Login />}    />
 
@@ -99,6 +123,10 @@ export default function App() {
           <Route path="/spectra" element={<RequireAuth><SpectraSupport /></RequireAuth>} />
         </Routes>
       </Suspense>
+
+      {/* Vercel Analytics & Speed Insights components */}
+      <Analytics />
+      <SpeedInsights />
     </MainLayout>
   );
 }

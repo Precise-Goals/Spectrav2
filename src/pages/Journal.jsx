@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Zap, Shield, Globe } from 'lucide-react';
+import SEO from '../components/ui/SEO';
 
 /* ─── Styled Components (Matching About/Guide) ───────────────────────────── */
 
@@ -267,7 +268,11 @@ export default function Journal() {
 
   return (
     <Page ref={pageRef} className="bg-grid-overlay">
-      
+      <SEO 
+        title="Spectra Journal — Decentralized Agentic Finance & News" 
+        description="Explore the Spectra Web3 Journal for insights on gasless execution, autonomous AI agents, Soroban smart contracts, and DeFi innovations."
+        keywords="Spectra Journal, Web3 News, Crypto Blog, Soroban DeFi, AI Agents, Gasless Crypto, Stellar News"
+      />
       {/* Hero */}
       <HeroSection>
         <Grid12>

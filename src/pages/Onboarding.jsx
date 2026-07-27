@@ -7,6 +7,7 @@ import { saveUserProfile } from '../lib/firestoreProfile';
 import { getProfile, createProfile, updateProfile } from '../lib/stellar/contracts/profile';
 import { isConnected } from '@stellar/freighter-api';
 import NeuralBackground from '../components/ui/NeuralBackground';
+import SEO from '../components/ui/SEO';
 import '../styles/final.css';
 
 /* ─── Design Tokens (matching CinematicHero / Login / Navbar) ────────────── */
@@ -902,6 +903,11 @@ export default function Onboarding() {
 
   return (
     <Page>
+      <SEO 
+        title="Web3 Onboarding & Identity Setup" 
+        description="Configure your decentralized Spectra Web3 profile, select your SaaS membership tier, and connect your Stellar wallet."
+        keywords="Web3 Onboarding, Crypto Profile Setup, Stellar Identity, SaaS NFT Membership"
+      />
       <NeuralBackground color="blue" trailOpacity={0.15} speed={0.8} />
       
       {/* ── Fixed top bar ── */}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import SwapBox, { ASSET_OPTIONS } from "../components/exchange/SwapBox";
 import { CONTRACT_ABIS, CONTRACT_ADDRESSES, NETWORK_INFO, resolveTokenDecimals, assertAddressFormat } from "../config/contracts.js";
+import SEO from "../components/ui/SEO";
 
 const TRADING_VIEW_SYMBOL = {
   USDC: "BINANCE:USDCUSDT",
@@ -107,6 +108,11 @@ export default function Exchange() {
 
   return (
     <main className="spectra-exchange-page bg-grid-overlay">
+      <SEO 
+        title="Decentralized Crypto Exchange (DEX)" 
+        description="Trade crypto assets instantaneously on Spectra DEX. Enjoy real-time AMM quotes, gasless swaps on Stellar Mainnet, and low slippage."
+        keywords="Decentralized Exchange, DEX, Crypto Swaps, AMM, Stellar Lumens XLM, USDC, EURC, Gasless DEX"
+      />
       <div className="spectra-exchange-header">
         <h1 className="spectra-exchange-title">[ EXCHANGE_NODE ]</h1>
         <p className="spectra-exchange-sub">

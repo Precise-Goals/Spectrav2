@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import SEO from '../components/ui/SEO';
 
 /* ─── Styled ─────────────────────────────────────────────────────────────────── */
 
@@ -252,6 +253,11 @@ export default function Guide() {
 
   return (
     <Page ref={pageRef} className="bg-grid-overlay">
+      <SEO 
+        title="Spectra Ecosystem Guide & Documentation" 
+        description="Comprehensive tutorial and documentation for Spectra Web3 Agentic Wallet, gasless transactions, Soroban contracts, and autonomous AI trading on Stellar."
+        keywords="Spectra Guide, Web3 Documentation, Stellar Tutorial, Soroban Docs, Gasless Crypto Guide, AI Agent Guide"
+      />
       {/* Hero */}
       <HeroSection>
         <Grid12>

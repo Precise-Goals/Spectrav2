@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import SEO from '../components/ui/SEO';
 import '../styles/final.css';
 
 /* ─── Styled Components (matching Spectra design system) ─────────────────── */
@@ -349,6 +350,11 @@ export default function Login() {
 
   return (
     <Page className="bg-grid-overlay">
+      <SEO 
+        title="Web3 Login & Authentication" 
+        description="Sign in to Spectra Web3 Platform with Stellar Freighter wallet, Email, or Google OAuth. Access gasless DeFi transactions and autonomous AI agents."
+        keywords="Spectra Login, Web3 Login, Crypto Wallet Sign In, Stellar Freighter, Decentralized Authentication"
+      />
       <LoginCard>
         <StatusBar>
           <PulseDot />

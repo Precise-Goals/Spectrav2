@@ -4,6 +4,7 @@ import styled, { keyframes } from "styled-components";
 import { askGeneralAgent } from "../api/sarvamAgent.js";
 import { HeroDesign } from "../components/layout/Agnt.jsx";
 import { MdMic, MdMicOff } from "react-icons/md";
+import SEO from "../components/ui/SEO";
 
 const Container = styled.div`
   width: 100vw;
@@ -297,6 +298,11 @@ export default function SpectraSupport() {
           <div className="blue">  </div>
           <div className="prpl">  </div>
       <Container className="bg-grid-overlay">
+        <SEO 
+          title="Voice AI Support & Assistant" 
+          description="Speak directly with Spectra's voice-enabled AI assistant for real-time guidance on Stellar DeFi, gasless execution, and membership tiers."
+          keywords="Voice AI, Crypto Support AI, Stellar AI Assistant, Web3 Help, Sarvam AI"
+        />
         <div className="spectraai">
           <HeroDesign />
         </div>

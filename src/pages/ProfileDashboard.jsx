@@ -8,6 +8,7 @@ import { useRateLimit } from '../context/RateLimitContext';
 import { getProfile, createProfile, updateProfile } from '../lib/stellar/contracts/profile';
 import { getUserTier } from "../services/tierVerification";
 import { getUserProfile, saveUserProfile } from '../lib/firestoreProfile';
+import SEO from '../components/ui/SEO';
 
 // Ponytail: Rewriting to Neo-Brutalist Cyberpunk aesthetic per user request.
 
@@ -367,6 +368,11 @@ export default function ProfileDashboard() {
 
   return (
     <Container>
+      <SEO 
+        title="Web3 User Profile & Membership Dashboard" 
+        description="Manage your decentralized Spectra identity, view your Soulbound NFT membership tier, and monitor your Stellar on-chain activities."
+        keywords="Spectra Profile, Web3 Identity, Stellar Wallet Profile, Soulbound NFT Dashboard"
+      />
       <Grid>
         
         {/* Left Column: Identity Card */}

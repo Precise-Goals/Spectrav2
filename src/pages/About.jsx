@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import SEO from '../components/ui/SEO';
 
 /* ─── Styled ─────────────────────────────────────────────────────────────────── */
 
@@ -329,6 +330,11 @@ export default function About() {
 
   return (
     <Page ref={pageRef} className="bg-grid-overlay">
+      <SEO 
+        title="About Spectra — Decentralized Architecture & Vision" 
+        description="Learn about Spectra Web3 architecture on Stellar Mainnet, Soroban smart contracts, Universal Gas Facility (UGF) gasless transactions, and Soulbound NFT membership tiers."
+        keywords="About Spectra, Stellar Soroban, Universal Gas Facility, Gasless Transactions, Soulbound NFTs, DeFi Architecture, Web3 Agentic Finance"
+      />
       {/* Hero */}
       <HeroSection>
         <Grid12>

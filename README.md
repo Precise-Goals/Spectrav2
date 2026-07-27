@@ -42,8 +42,9 @@
 10. [Frontend Architecture](#frontend-architecture)
 11. [Project Structure](#project-structure)
 12. [Environment Setup](#environment-setup)
-13. [Blockchain Innovation](#blockchain-innovation)
-14. [Team Falcons](#team-falcons)
+13. [Deployed Smart Contracts](#deployed-smart-contracts)
+14. [Blockchain Innovation](#blockchain-innovation)
+15. [Team Falcons](#team-falcons)
 
 ---
 
@@ -401,7 +402,8 @@ The Profile contract stores:
 - `avatarId` — chosen avatar (0-9)
 - `exists` — boolean flag for first-time creation gating
 
-**Contract Address:** `CAIVPYSHCJTMYFOCLLNJXY33377SWJLEIIYQY53UFSU6HJDTEVMATCIJ` (Testnet)
+**Contract Address (Testnet):** `CAIVPYSHCJTMYFOCLLNJXY33377SWJLEIIYQY53UFSU6HJDTEVMATCIJ`  
+**Contract Address (Mainnet):** `CAX2HIJ7DMKQV6W2T3O7I2C2KN24EEWVOHNJRXS6KT7OLAHD3ETDEOLP`
 
 **Why Soroban for Profile?**
 Because on-chain identity is the one data type that must be censorship-resistant, universally readable by any Stellar dApp, and provably owned by the wallet. A Horizon asset can't store structured data. A database can be deleted. A Soroban contract cannot.
@@ -437,6 +439,11 @@ sequenceDiagram
 
 **Why Hybrid?** Tier *verification* stays on Soroban (tamper-proof). Tier *minting* uses classical Horizon multi-sig asset payments (reliable, instant, no simulation errors).
 
+**NFT Contract Address (Testnet):** `CDBW7YZY4IPEDIBUP6WNHAAKNNGN5GGQBQZ3NXAVACMRBFC33IVTKW4X`  
+**NFT Contract Address (Mainnet):** `CAKTKA6XVEPVK3NSDPJMHGH3NVAS4NMCYQECKJDLS5HBEFQXBJH6HLJC`  
+**SaaS Contract Address (Testnet):** `CCTD2FI3HP6EBBYOYBYJUENVOFYND7Q42HMSYLQ6LWN3GIC7YDF4S3YS`  
+**SaaS Contract Address (Mainnet):** `CA5OG7UIOGTZSB7E4JZTK7L5G65LVQCY2B2SETJSKR7CNQFSKMCOHMOF`
+
 ---
 
 ## Exchange & Cross-Chain Bridge
@@ -460,9 +467,9 @@ graph LR
 
 | Asset | Type | Identifier | SAC Contract |
 |---|---|---|---|
-| **XLM** | Native | `native` | `CDLZFC3...GCYSC` |
-| **USDC** | Classic | `USDC:GBBD47...` | `CCW67C...C4K5` |
-| **EURC** | Classic | `EURC:GB3Q6...` | `CCUUDM...MCGZ` |
+| **XLM** | Native | `native` | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
+| **USDC** | Classic | `USDC:GBBD47...` | `CCW67CDAYNMDVWZVKX6BPPX6FUI4NSI6QL6N6HWM6Z7S6TWXA7YAC4K5` |
+| **EURC** | Classic | `EURC:GB3Q6...` | `CCUUDM434BMZMYWYDITHFXHDMIVTGGD6T2I5UKNX5BSLXLW7HVR4MCGZ` |
 
 ### Cross-Chain Bridge Architecture
 
@@ -646,13 +653,18 @@ cp .env.example .env
 | `VITE_STELLAR_RPC_URL` | Soroban RPC endpoint | `https://soroban-testnet.stellar.org` |
 | `VITE_STELLAR_HORIZON_URL` | Horizon API base | `https://horizon-testnet.stellar.org` |
 | `VITE_STELLAR_NETWORK_PASSPHRASE` | Network passphrase | `Test SDF Network ; September 2015` |
-| `VITE_PROFILE_CONTRACT_ID` | SpectraProfile Soroban ID | `CAIVPY...` |
-| `VITE_SAAS_ISSUER_PUBLIC_KEY` | SaaS asset issuer G-address | `GCXCTJ...` |
+| `VITE_PROFILE_CONTRACT_ID` | SpectraProfile Soroban ID (Testnet) | `CAIVPYSHCJTMYFOCLLNJXY33377SWJLEIIYQY53UFSU6HJDTEVMATCIJ` |
+| `VITE_SAAS_CONTRACT_ID` | SaaS Subscription Contract ID (Testnet) | `CCTD2FI3HP6EBBYOYBYJUENVOFYND7Q42HMSYLQ6LWN3GIC7YDF4S3YS` |
+| `VITE_NFT_CONTRACT_ID` | NFT Membership Contract ID (Testnet) | `CDBW7YZY4IPEDIBUP6WNHAAKNNGN5GGQBQZ3NXAVACMRBFC33IVTKW4X` |
+| `VITE_EXCHANGE_CONTRACT_ID` | Exchange Router Contract ID (Testnet) | `CD5TDYCBYOFRGYATA3RXOQRV4THQKMSGF7IL32RXW7JKSCJFJFGGSTHP` |
+| `VITE_STELLAR_FEEDBACK_CONTRACT` | Feedback Contract ID (Testnet) | `CC3IK6Q2JMANZI7Z44HP2YK65XACFAPD43S2ASPLXPGBA4VFFXBZWTQP` |
+| `VITE_STELLAR_BRIDGE_CONTRACT` | Bridge Contract ID (Testnet) | `CAZ7LB5RJW2VLZDAZQVBRYFYONDX7LQNZ43Z3E7XO6UGXKYZXXDM6W6J` |
+| `VITE_SAAS_ISSUER_PUBLIC_KEY` | SaaS asset issuer G-address | `GCD4U6CSLLVD6MC7EIDOPVBZ3PJUHDEUAM75RB5ZKZLIBG57OP5ZZQO4` |
 | `VITE_SAAS_ISSUER_SECRET_KEY` | Issuer signing key (backend) | `S...` |
 | `VITE_STELLAR_TREASURY_SECRET` | Gasless relayer treasury | `S...` |
-| `VITE_STELLAR_SAC_XLM` | XLM SAC contract address | `CDLZFC...` |
-| `VITE_STELLAR_SAC_USDC` | USDC SAC contract address | `CCW67C...` |
-| `VITE_STELLAR_SAC_EURC` | EURC SAC contract address | `CCUUDM...` |
+| `VITE_STELLAR_SAC_XLM` | XLM SAC contract address | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
+| `VITE_STELLAR_SAC_USDC` | USDC SAC contract address | `CCW67CDAYNMDVWZVKX6BPPX6FUI4NSI6QL6N6HWM6Z7S6TWXA7YAC4K5` |
+| `VITE_STELLAR_SAC_EURC` | EURC SAC contract address | `CCUUDM434BMZMYWYDITHFXHDMIVTGGD6T2I5UKNX5BSLXLW7HVR4MCGZ` |
 
 ```bash
 # Run development server
@@ -661,6 +673,31 @@ bun dev
 # Production build
 bun run build
 ```
+
+---
+
+## Deployed Smart Contracts
+
+Spectra v2 smart contracts are deployed and verified on both **Stellar Testnet** and **Stellar Mainnet**. Below are the official contract addresses from our deployment environment:
+
+### Soroban Smart Contracts
+
+| Contract Name | Description | Testnet Address | Mainnet Address |
+|---|---|---|---|
+| **SpectraProfile** | On-chain Identity & Profile Storage | `CAIVPYSHCJTMYFOCLLNJXY33377SWJLEIIYQY53UFSU6HJDTEVMATCIJ` | `CAX2HIJ7DMKQV6W2T3O7I2C2KN24EEWVOHNJRXS6KT7OLAHD3ETDEOLP` |
+| **SaaS Subscription** | Subscription Management & Tiers | `CCTD2FI3HP6EBBYOYBYJUENVOFYND7Q42HMSYLQ6LWN3GIC7YDF4S3YS` | `CA5OG7UIOGTZSB7E4JZTK7L5G65LVQCY2B2SETJSKR7CNQFSKMCOHMOF` |
+| **NFT Verification** | NFT Membership Tier Verification | `CDBW7YZY4IPEDIBUP6WNHAAKNNGN5GGQBQZ3NXAVACMRBFC33IVTKW4X` | `CAKTKA6XVEPVK3NSDPJMHGH3NVAS4NMCYQECKJDLS5HBEFQXBJH6HLJC` |
+| **Exchange Router** | On-chain Swap & Trade Execution | `CD5TDYCBYOFRGYATA3RXOQRV4THQKMSGF7IL32RXW7JKSCJFJFGGSTHP` | `CBM2FZ6G4MPP44CDPXOOZOEAX7VUQQ2SKFY3GVY6BPCXFQTXQEK3IBUE` |
+| **Stellar Feedback** | Decentralized Reviews & Ratings | `CC3IK6Q2JMANZI7Z44HP2YK65XACFAPD43S2ASPLXPGBA4VFFXBZWTQP` | `CCPE6UP2OZFANSEHX4TX74SLR6MF5NZVLWI6FBKNEKRD63V7ZPEBDI5N` |
+| **Stellar Bridge** | Cross-chain Asset Bridging | `CAZ7LB5RJW2VLZDAZQVBRYFYONDX7LQNZ43Z3E7XO6UGXKYZXXDM6W6J` | *N/A* |
+
+### Stellar Asset Contracts (SAC) — Testnet
+
+| Token / Asset | SAC Contract Address | Type / Issuer |
+|---|---|---|
+| **XLM** | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` | Native (`native`) |
+| **USDC** | `CCW67CDAYNMDVWZVKX6BPPX6FUI4NSI6QL6N6HWM6Z7S6TWXA7YAC4K5` | Classic (`USDC:GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN`) |
+| **EURC** | `CCUUDM434BMZMYWYDITHFXHDMIVTGGD6T2I5UKNX5BSLXLW7HVR4MCGZ` | Classic (`EURC:GB3Q6...`) |
 
 ---
 

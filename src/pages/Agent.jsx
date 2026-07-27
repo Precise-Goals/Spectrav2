@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import GlassTerminal from '../components/agent/GlassTerminal';
+import SEO from '../components/ui/SEO';
 
 const PageWrap = styled.main`
   flex: 1;
@@ -23,7 +24,7 @@ const DotBg = styled.div`
   pointer-events: none;
   z-index: 0;
   background-image: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background-size: 32px 32px;
 
   [data-theme='light'] & {
     background-image: radial-gradient(circle at 50% 50%, rgba(9, 9, 11, 0.03) 1px, transparent 1px);
@@ -96,6 +97,11 @@ const TRADING_VIEW_SYMBOL = {
 export default function Agent() {
   return (
     <PageWrap className="bg-grid-overlay">
+      <SEO 
+        title="Autonomous AI Crypto Trading Agent" 
+        description="Interact with Spectra's autonomous Web3 AI trading agent on Stellar Mainnet. Experience automated portfolio execution, Soroban smart contract analysis, and gasless trades."
+        keywords="AI Trading Agent, Web3 AI Agent, Crypto Bot, Stellar Soroban AI, Autonomous Trading, Gasless Crypto Execution"
+      />
       <DotBg />
       <GlassTerminal />
     </PageWrap>
