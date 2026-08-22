@@ -23,7 +23,7 @@ const SARVAM_CHAT_ENDPOINT = `${SARVAM_API_BASE}/v1/chat/completions`;
  * Default model served by Sarvam AI's chat completions API.
  * Swap to any Sarvam-supported model identifier if needed.
  */
-const SARVAM_MODEL = "sarvam-30b";
+const SARVAM_MODEL = "sarvam-105b-conversational";
 
 /** Maximum time (ms) to wait for a single API attempt before aborting. */
 const REQUEST_TIMEOUT_MS = 35_000;
